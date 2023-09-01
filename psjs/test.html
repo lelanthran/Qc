@@ -1,0 +1,47 @@
+<html>
+
+<body>
+    <script type="module">
+        import * as psjs from "./psjs.mjs";
+
+        window.pub = psjs.pub;
+        window.sub = psjs.sub;
+        window.unsub = psjs.unsub;
+
+        let subId = 0;
+
+        function strfy(o) {
+            return JSON.stringify(o, ' ', 3);
+        }
+
+        sub("psjs-subscribe", (sender, payload) => {
+            subId = sub("psjs-buttonpush", (sender, payload) => {
+                console.log(`Buttonpush message recieved from ${sender.innerHTML}: ${strfy(payload)}`);
+            });
+            console.log(`subscribed to ${subId}: ${strfy(payload)} from ${strfy(sender)}`);
+        });
+        sub("psjs-unsubscribe", (sender, payload) => {
+            console.log(`Handler (no-obj) received ${payload} from "${sender.innerHTML}"`);
+            unsub("psjs-buttonpush", subId);
+            console.log("Unsubscribed for button-push events");
+        });
+
+        class myclass {
+            constructor(msgName) {
+                sub(msgName, (sender, payload) => {
+                    console.log(`Object ${strfy(this)} received ${strfy(payload)} from "${sender.innerHTML}"`);
+                });
+            }
+        }
+
+        let btnPush = new myclass('psjs-buttonpush');
+
+    </script>
+
+    <button onclick="pub(this, 'psjs-subscribe', null)">Subscribe</button>
+    <button onclick="pub(this, 'psjs-unsubscribe', null)">Unsubscribe</button>
+    <br />
+    <button onclick="pub(this, 'psjs-buttonpush', {'HELLO': 'WORLD', 'FOO': 'BAR'})">Push this button</button>
+</body>
+
+</html>
