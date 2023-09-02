@@ -7,7 +7,7 @@
 
         // The test is on three channels:
         // 1. The div subscribes to channel1 and channel3
-        // 2. The button subscribes to channel3
+        // 2. The button subscribes to channel2
         // 3. On the click, the button publishes a message to channel1
         // 4. On receipt of a message, the div publishes a message to channel2
         // 5. The timer just continuously generates a message on channel3.
@@ -42,7 +42,7 @@
                 .subscribe("channel1", function (sender, payload) {
                     console.log(`sender=[${sender}], payload=[${payload}]`);
                     this.innerHTML += "<br>channel1: <tt>" + payload + "</tt>";
-                    this.innerHTML += "<br>publishing on channel2: " + ++counter;
+                    this.innerHTML += "<br>publishing on channel2: [" + ++counter + "]";
                     this.publish("channel2", counter);
                 })
                 .subscribe("channel3", function (sender, payload) {
