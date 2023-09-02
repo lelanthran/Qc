@@ -3,45 +3,55 @@
 <body>
     <script type="module">
         import * as psjs from "./psjs.mjs";
+        import * as elements from "../components/elements.mjs";
 
-        window.pub = psjs.pub;
-        window.sub = psjs.sub;
-        window.unsub = psjs.unsub;
+        // The test is on three channels:
+        // 1. The div subscribes to channel1 and channel3
+        // 2. The button subscribes to channel3
+        // 3. On the click, the button publishes a message to channel1
+        // 4. On receipt of a message, the div publishes a message to channel2
+        // 5. The timer just continuously generates a message on channel3.
+        let counter = 0;
+        let timerCounter = 10;
 
-        let subId = 0;
-
-        function strfy(o) {
-            return JSON.stringify(o, ' ', 3);
-        }
-
-        sub("psjs-subscribe", (sender, payload) => {
-            subId = sub("psjs-buttonpush", (sender, payload) => {
-                console.log(`Buttonpush message recieved from ${sender.innerHTML}: ${strfy(payload)}`);
-            });
-            console.log(`subscribed to ${subId}: ${strfy(payload)} from ${strfy(sender)}`);
-        });
-        sub("psjs-unsubscribe", (sender, payload) => {
-            console.log(`Handler (no-obj) received ${payload} from "${sender.innerHTML}"`);
-            unsub("psjs-buttonpush", subId);
-            console.log("Unsubscribed for button-push events");
-        });
-
-        class myclass {
-            constructor(msgName) {
-                sub(msgName, (sender, payload) => {
-                    console.log(`Object ${strfy(this)} received ${strfy(payload)} from "${sender.innerHTML}"`);
-                });
+        let timer = setInterval(() => {
+            psjs.pub(null, "channel3", `timed publisher: ${timerCounter}`);
+            if (timerCounter-- <= 0) {
+                clearInterval(timer);
             }
-        }
+        }, 1000);
 
-        let btnPush = new myclass('psjs-buttonpush');
+        let content = elements.Div()
+            .push(elements.Button()
+                .setInnerHTML("Publish on clickEvent: ")
+                .runFunc(function () {
+                    this.setAttribute("testName", "testValue");
+                })
+                .addEventListener("click", (evt) => {
+                    console.log("Event handler for button triggered");
+                })
+                .publishOnEvent("click", "channel1", () => {
+                    return `Button Clicked ${counter} times`;
+                })
+                .subscribe("channel2", function (sender, payload) {
+                    this.setInnerHTML("Publish on clickEvent: " + payload);
+                }))
+            .push(elements.Br())
+            .push(elements.Div()
+                .setInnerHTML("Empty content")
+                .subscribe("channel1", function (sender, payload) {
+                    console.log(`sender=[${sender}], payload=[${payload}]`);
+                    this.innerHTML += "<br>channel1: <tt>" + payload + "</tt>";
+                    this.innerHTML += "<br>publishing on channel2: " + ++counter;
+                    this.publish("channel2", counter);
+                })
+                .subscribe("channel3", function (sender, payload) {
+                    this.innerHTML += "<br>channel3: <tt>" + payload + "</tt>";
+                }))
+            .attachTo(document.body);
 
     </script>
 
-    <button onclick="pub(this, 'psjs-subscribe', null)">Subscribe</button>
-    <button onclick="pub(this, 'psjs-unsubscribe', null)">Unsubscribe</button>
-    <br />
-    <button onclick="pub(this, 'psjs-buttonpush', {'HELLO': 'WORLD', 'FOO': 'BAR'})">Push this button</button>
 </body>
 
 </html>

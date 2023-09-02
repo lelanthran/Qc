@@ -1,7 +1,7 @@
 
-import * as jscomponent from "./jscomponents.mjs";
+import * as component from "./elements.mjs";
 
-export class WarningDiv extends jscomponent.PsjsElement {
+export class PsjsDiv extends component.PsjsElement {
 
   constructor() {
     super();
@@ -26,4 +26,4 @@ export class WarningDiv extends jscomponent.PsjsElement {
 }
 
 
-customElements.define('warning-div', WarningDiv);
+customElements.define('psjs-div', WarningDiv);

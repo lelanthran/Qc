@@ -83,3 +83,8 @@ function messageHandlerRemove(channel, id) {
 function messageHandlerFind(channel) {
     return messageHandlers.get(channel);
 }
+
+
+window.pub = pub;
+window.sub = sub;
+window.unsub = unsub;
