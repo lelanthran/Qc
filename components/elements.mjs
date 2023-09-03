@@ -272,6 +272,8 @@ export function Input(optionalContent) {
       ret.setAttribute("placeholder", placeholder);
       return ret;
    }
+
+   return ret;
 }
 
 export function Label(optionalContent) {
