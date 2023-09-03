@@ -266,7 +266,12 @@ export function Br(optionalContent) {
 }
 
 export function Input(optionalContent) {
-   return Element("input", optionalContent);
+   let ret = Element("input", optionalContent);
+
+   ret.setPlaceholder = (placeholder) => {
+      ret.setAttribute("placeholder", placeholder);
+      return ret;
+   }
 }
 
 export function Label(optionalContent) {
