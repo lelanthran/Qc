@@ -283,6 +283,12 @@ export function Flex(flexDirection, optionalContent) {
       .setStyle("flexDirection", flexDirection);
 }
 
+export function Grid(gridTemplateColumns, optionalContent) {
+   return Element("div", optionalContent)
+      .setStyle("display", "grid")
+      .setStyle("gridTemplateColumns", gridTemplateColumns);
+}
+
 export function PasswordInput(optionalContent) {
    return Input(optionalContent)
       .setAttribute("type", "password");
