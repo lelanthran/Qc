@@ -149,6 +149,9 @@ export function Element(tag, optionalContent) {
    return ret;
 }
 
+/**
+ * Standard elements
+ */
 export function Form(optionalContent) {
    return Element("form", optionalContent);
 }
@@ -165,13 +168,23 @@ export function Br(optionalContent) {
    return Element("br", optionalContent);
 }
 
+export function Input(optionalContent) {
+   return Element("input", optionalContent);
+}
+
 
 /**
- * Some convenience wrappers
+ * Shorthand for standard elements
  */
 export function Flex(flexDirection, optionalContent) {
    return Element("div", optionalContent)
       .setStyle("display", "flex")
       .setStyle("flexDirection", flexDirection);
 }
+
+export function PasswordInput(optionalContent) {
+   return Input(optionalContent)
+      .setAttribute("type", "password");
+}
+
 
