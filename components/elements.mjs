@@ -155,8 +155,8 @@ export function Br(optionalContent) {
 /**
  * Some convenience wrappers
  */
-export function Flex(flexDirection) {
-   return Element("div")
+export function Flex(flexDirection, optionalContent) {
+   return Element("div", optionalContent)
       .runFunc(function () {
          this.style.display = "flex";
          this.style.flexDirection = flexDirection;
