@@ -14,40 +14,67 @@ export function Element(tag, optionalContent) {
       ret.textContent = optionalContent;
    }
 
+
    /**
-    * HTMLElement methods, or any other existing methods, on the wrapped
-    * element. When the caller declares the function using the `function`
-    * keyword, the `this` object can be used by the caller to call any
-    * of the existing methods on the element.
+    * Call HTMLElement methods, or any other existing methods, on the
+    * wrapped element. When the caller declares the function using the
+    * `function` keyword, the `this` object can be used by the caller
+    * to call any of the existing methods on the element.
     *
     * @param {function} func - the function to be executed on the wrapped element
-    * @return {object} - the wrapped element itself
+    * @return {HTMLElement} - The element.
     */
    ret.runFunc = (func) => {
       func.call(ret);
       return ret;
    }
 
+   ret._findLabels = () => {
+      let ret = [];
+      for (const child of ret.children) {
+         if (child.tagName === "label" || child.tagName === "LABEL") {
+            ret.push (child);
+         }
+         if (child._findLabels != undefined && child._findLabels != null) {
+            ret = ret.concat(child._findLabels());
+         }
+      }
+      return ret;
+   }
+
    /**
     * Attach the element to the specified parent element.
     *
-    * @param {HTMLElement} parentElement - The parent element to attach the element to.
-    * @return {HTMLElement} The attached element.
+    * @param {HTMLElement} pElement - The parent element to attach the element to.
+    * @return {HTMLElement} - The element.
     */
-   ret.attachTo = (parentElement) => {
-      parentElement.appendChild(ret);
+   ret.attachTo = (pElement) => {
+      let labels = ret._findLabels();
+      labels.forEach((label) => {
+         if (label.nextSibling) {
+            let name = label.nextSibling.getAttribute("name");
+            if (name != undefined && name != null) {
+               label.setAttribute("for", name);
+            }
+         }
+      });
+      pElement.appendChild(ret);
       return ret;
    }
 
    /**
     * Append a child to the element.
     *
-    * @param {type} child - The child element to be appended.
-    * @return {type} The modified element with the child appended.
+    * @param {HTMLElement} child - The child element to be appended.
+    * @return {HTMLElement} - The element.
     */
    ret.push = (child) => {
       ret.appendChild(child);
       return ret;
+   }
+
+   ret.label = (caption) => {
+      ret._label = Element("label", caption);
    }
 
    /**
@@ -57,7 +84,7 @@ export function Element(tag, optionalContent) {
     *
     * @param {string} name - The name of the style.
     * @param {string} value - The new value to set the style to.
-    * @return {HTMLElement} The attached element.
+    * @return {HTMLElement} - The element.
     */
    ret.setStyle = (name, value) => {
       ret.style[name] = value;
@@ -70,7 +97,7 @@ export function Element(tag, optionalContent) {
     *
     * @param {type} key - the key parameter
     * @param {type} value - the value parameter
-    * @return {type} the return value
+    * @return {HTMLElement} - The element.
     */
    ret.setAttribute = (key, value) => {
       ret._setAttribute(key, value);
@@ -81,7 +108,7 @@ export function Element(tag, optionalContent) {
     * A wrapper to set the innerHTML of an element.
     *
     * @param {string} value - The value to set as the innerHTML.
-    * @return {Object} - The modified object with the innerHTML set.
+    * @return {HTMLElement} - The element.
     */
    ret.setInnerHTML = (value) => {
       ret.innerHTML = value;
@@ -94,7 +121,7 @@ export function Element(tag, optionalContent) {
     *
     * @param {string} evtName - The name of the event to listen for.
     * @param {function} func - The callback function to be executed when the event is triggered.
-    * @return {object} ret - The object on which the event listener is being added.
+    * @return {HTMLElement} - The element.
     */
    ret.addEventListener = (evtName, func) => {
       ret._addEventListener(evtName, func);
@@ -108,7 +135,7 @@ export function Element(tag, optionalContent) {
     * @param {string} evtName - the name of the event
     * @param {string} channel - the channel to publish the message on
     * @param {any} payload - the payload to be published
-    * @return {Object} ret - the object on which the function is called
+    * @return {HTMLElement} - The element.
     */
    ret.publishOnEvent = (evtName, channel, payload) => {
       ret.addEventListener(evtName, () => {
@@ -124,7 +151,7 @@ export function Element(tag, optionalContent) {
     *
     * @param {string} channel - The channel to publish the message to.
     * @param {any} payload - The message payload.
-    * @return {Object} - The resulting object.
+    * @return {HTMLElement} - The element.
     */
    ret.publish = (channel, payload) => {
       psjs.pub(ret, channel, payload);
@@ -136,7 +163,7 @@ export function Element(tag, optionalContent) {
     *
     * @param {string} channel - The name of the channel to subscribe to.
     * @param {function} func - The callback function to be executed when a message is received on the channel.
-    * @return {object} ret - The object on which the function is called.
+    * @return {HTMLElement} - The element.
     */
    ret.subscribe = (channel, func) => {
       let f = (s, p) => {

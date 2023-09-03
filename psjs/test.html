@@ -1,8 +1,8 @@
 <html>
 
-<body>
-    <script type="module">
-        import * as psjs from "./psjs.mjs";
+   <body>
+      <script type="module">
+         import * as psjs from "./psjs.mjs";
         import * as elements from "../components/elements.mjs";
 
         // The test is on three channels:
@@ -22,6 +22,7 @@
         }, 1000);
 
         let content = elements.Div()
+            .label("The Label for the button")
             .push(elements.Button("Initial Button Text")
                 .runFunc(function () {
                     this.setAttribute("testName", "testValue");
@@ -37,6 +38,7 @@
                 }))
             .push(elements.Br())
             .push(elements.Div()
+                .label("The Label for the div")
                 .setInnerHTML("Empty content")
                 .subscribe("channel1", function (sender, payload) {
                     console.log(`sender=[${sender}], payload=[${payload}]`);
@@ -49,8 +51,8 @@
                 }))
             .attachTo(document.body);
 
-    </script>
+      </script>
 
-</body>
+   </body>
 
 </html>
