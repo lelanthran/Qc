@@ -1,9 +1,24 @@
 <html>
+   <head>
+<style>
+.s1 {
+   font-family: monospace;
+}
 
+.s2 {
+   background-color: #ffcccc;
+}
+
+.s3 {
+   color: #774444;
+}
+
+</style>
+   </head>
    <body>
       <script type="module">
          import * as psjs from "./psjs.mjs";
-        import * as elements from "../components/elements.mjs";
+         import * as elements from "../components/elements.mjs";
 
         // The test is on three channels:
         // 1. The div subscribes to channel1 and channel3
@@ -21,34 +36,37 @@
             }
         }, 1000);
 
-        let content = elements.Div()
-            .label("The Label for the button")
+         let content = elements.Div()
+            .push (elements.Label("The Label for the button"))
             .push(elements.Button("Initial Button Text")
-                .runFunc(function () {
-                    this.setAttribute("testName", "testValue");
-                })
-                .addEventListener("click", (evt) => {
-                    console.log("Event handler for button triggered");
-                })
-                .publishOnEvent("click", "channel1", () => {
-                    return `Button Clicked ${counter} times`;
-                })
-                .subscribe("channel2", function (sender, payload) {
-                    this.setInnerHTML("Publish on clickEvent: " + payload);
-                }))
+               .classListAdd("s1", "s2", "s3")
+               .setAttribute("name", "TheButton")
+               .runFunc(function () {
+                  this.setAttribute("testName", "testValue");
+               })
+               .addEventListener("click", (evt) => {
+                  console.log("Event handler for button triggered");
+               })
+               .publishOnEvent("click", "channel1", () => {
+                  return `Button Clicked ${counter} times`;
+               })
+               .subscribe("channel2", function (sender, payload) {
+                  this.setInnerHTML("Publish on clickEvent: " + payload);
+               }))
             .push(elements.Br())
+            .push(elements.Label("The Label for the div"))
             .push(elements.Div()
-                .label("The Label for the div")
-                .setInnerHTML("Empty content")
-                .subscribe("channel1", function (sender, payload) {
-                    console.log(`sender=[${sender}], payload=[${payload}]`);
-                    this.innerHTML += "<br>channel1: <tt>" + payload + "</tt>";
-                    this.innerHTML += "<br>publishing on channel2: [" + ++counter + "]";
-                    this.publish("channel2", counter);
-                })
-                .subscribe("channel3", function (sender, payload) {
-                    this.innerHTML += "<br>channel3: <tt>" + payload + "</tt>";
-                }))
+               .setAttribute("name", "TheDiv")
+               .setInnerHTML("Empty content")
+               .subscribe("channel1", function (sender, payload) {
+                  console.log(`sender=[${sender}], payload=[${payload}]`);
+                  this.innerHTML += "<br>channel1: <tt>" + payload + "</tt>";
+                  this.innerHTML += "<br>publishing on channel2: [" + ++counter + "]";
+                  this.publish("channel2", counter);
+               })
+               .subscribe("channel3", function (sender, payload) {
+                  this.innerHTML += "<br>channel3: <tt>" + payload + "</tt>";
+               }))
             .attachTo(document.body);
 
       </script>

@@ -29,18 +29,6 @@ export function Element(tag, optionalContent) {
       return ret;
    }
 
-   ret._findLabels = () => {
-      let ret = [];
-      for (const child of ret.children) {
-         if (child.tagName === "label" || child.tagName === "LABEL") {
-            ret.push (child);
-         }
-         if (child._findLabels != undefined && child._findLabels != null) {
-            ret = ret.concat(child._findLabels());
-         }
-      }
-      return ret;
-   }
 
    /**
     * Attach the element to the specified parent element.
@@ -49,15 +37,16 @@ export function Element(tag, optionalContent) {
     * @return {HTMLElement} - The element.
     */
    ret.attachTo = (pElement) => {
-      let labels = ret._findLabels();
-      labels.forEach((label) => {
+      let labels = ret.querySelectorAll("label");
+      for (let i=0; i<labels.length; i++) {
+         let label = labels[i];
          if (label.nextSibling) {
             let name = label.nextSibling.getAttribute("name");
             if (name != undefined && name != null) {
                label.setAttribute("for", name);
             }
          }
-      });
+      }
       pElement.appendChild(ret);
       return ret;
    }
@@ -73,10 +62,6 @@ export function Element(tag, optionalContent) {
       return ret;
    }
 
-   ret.label = (caption) => {
-      ret._label = Element("label", caption);
-   }
-
    /**
     * Set a style property. Note that the `name` must be the javascript
     * property, and not the css property, for e.g. use `flexDirection`
@@ -88,6 +73,92 @@ export function Element(tag, optionalContent) {
     */
    ret.setStyle = (name, value) => {
       ret.style[name] = value;
+      return ret;
+   }
+
+   /**
+    * Adds a classname to the element's classlist.
+    *
+    * The methods .classListAdd(), .classListRemove(), .classListReplace() and
+    * .classListToggle() are all wrappers around the [HTMLElement].classList
+    * methods.
+    *
+    * They are provided because it is impossible to use the HTMLElement
+    * properties directly unless runFunc() is used (which is clunky).
+    *
+    * @param {string} name - The name of the class to add.
+    * @param {string} ...names  - Extra classnames to add
+    * @return {HTMLElement} - The element.
+    */
+   ret.classListAdd = (name, ...names) => {
+      ret.classList.add(name);
+      for (let i=0; i<names.length; i++) {
+         ret.classList.add(names[i]);
+      }
+      return ret;
+   }
+
+   /**
+    * Removes a classname from the element's classlist.
+    *
+    * The methods .classListAdd(), .classListRemove(), .classListReplace() and
+    * .classListToggle() are all wrappers around the [HTMLElement].classList
+    * methods.
+    *
+    * They are provided because it is impossible to use the HTMLElement
+    * properties directly unless runFunc() is used (which is clunky.
+    *
+    * @param {string} name - The name of the class to remove
+    * @param {string} ...names  - Extra classnames to remove
+    * @return {HTMLElement} - The element.
+    */
+   ret.classListRemove = (name, ...names) => {
+      ret.classList.remove(names)
+      for (let i=0; i<names.length; i++) {
+         ret.classList.remove(names[i])
+      }
+      return ret;
+   }
+
+   /**
+    * Replaces the the classname `oldname` with the classname `newname` in the
+    * element's classList property.
+    *
+    * The methods .classListAdd(), .classListRemove(), .classListReplace() and
+    * .classListToggle() are all wrappers around the [HTMLElement].classList
+    * methods.
+    *
+    * They are provided because it is impossible to use the HTMLElement
+    * properties directly unless runFunc() is used (which is clunky.
+    *
+    * @param {string} oldname - The name of the class to replace.
+    * @param {string} newname - The class to replace oldname with.
+    * @return {HTMLElement} - The element.
+    */
+   ret.classListReplace = (oldname, newname) => {
+      ret.classList.replace(oldname, newname)
+      return ret;
+   }
+
+   /**
+    * Toggles a classname between on/off in the element's classlist.
+    *
+    * The methods .classListAdd(), .classListRemove(), .classListReplace() and
+    * .classListToggle() are all wrappers around the [HTMLElement].classList
+    * methods.
+    *
+    * They are provided because it is impossible to use the HTMLElement
+    * properties directly unless runFunc() is used (which is clunky).
+    *
+    * @param {string} name - The name of the class.
+    * @param {string} ...names  - Extra classnames to toggle
+    * @return {HTMLElement} - The element.
+    */
+   ret.classListToggle = (name, ...names) => {
+      ret.classList.toggle(names)
+      for (let i=0; i<names.length; i++) {
+         ret.classList.toggle(names[i])
+      }
       return ret;
    }
 
@@ -140,7 +211,6 @@ export function Element(tag, optionalContent) {
    ret.publishOnEvent = (evtName, channel, payload) => {
       ret.addEventListener(evtName, () => {
          let p = (typeof payload === "function") ? payload() : payload;
-         console.log(`Publishing ${evtName} on channel ${channel}: "${p}"`);
          psjs.pub(ret, channel, p);
       });
       return ret;
@@ -197,6 +267,10 @@ export function Br(optionalContent) {
 
 export function Input(optionalContent) {
    return Element("input", optionalContent);
+}
+
+export function Label(optionalContent) {
+   return Element("label", optionalContent);
 }
 
 
