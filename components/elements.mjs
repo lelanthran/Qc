@@ -7,8 +7,12 @@ import * as psjs from "../psjs/psjs.mjs";
 
 // Create an HTMLElement that can be used in a Fluent API
 // 
-export function Element(tag) {
-    let ret = document.createElement(tag);
+export function Element(tag, optionalContent) {
+   let ret = document.createElement(tag);
+
+   if (optionalContent != undefined && optionalContent != null) {
+      ret.textContent = optionalContent;
+   }
 
     /**
      * HTMLElement methods, or any other existing methods, on the wrapped
@@ -131,18 +135,30 @@ export function Element(tag) {
     return ret;
 }
 
-export function Form() {
-    return Element("form");
+export function Form(optionalContent) {
+   return Element("form", optionalContent);
 }
 
-export function Button() {
-    return Element("button");
+export function Button(optionalContent) {
+   return Element("button", optionalContent);
 }
 
-export function Div() {
-    return Element("div");
+export function Div(optionalContent) {
+   return Element("div", optionalContent);
 }
 
-export function Br() {
-    return Element("br");
+export function Br(optionalContent) {
+   return Element("br", optionalContent);
 }
+
+/**
+ * Some convenience wrappers
+ */
+export function Flex(flexDirection) {
+   return Element("div")
+      .runFunc(function () {
+         this.style.display = "flex";
+         this.style.flexDirection = flexDirection;
+      });
+}
+
