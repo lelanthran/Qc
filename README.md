@@ -1,2 +1,2 @@
 # Qc
-Qc: A quick component helper library for web components.
+Qc: A quick component helper library for DOM elements.
