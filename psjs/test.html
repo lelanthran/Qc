@@ -1,76 +1,87 @@
 <html>
-   <head>
-<style>
-.s1 {
-   font-family: monospace;
-}
 
-.s2 {
-   background-color: #ffcccc;
-}
+<head>
+   <style>
+      .s1 {
+         font-family: monospace;
+      }
 
-.s3 {
-   color: #774444;
-}
+      .s2 {
+         background-color: #ffcccc;
+      }
 
-</style>
-   </head>
-   <body>
-      <script type="module">
-         import * as psjs from "./psjs.mjs";
-         import * as elements from "../components/elements.mjs";
+      .s3 {
+         color: #774444;
+      }
+   </style>
+   <link rel="stylesheet" type="text/css" href="./style.css">
+</head>
 
-        // The test is on three channels:
-        // 1. The div subscribes to channel1 and channel3
-        // 2. The button subscribes to channel2
-        // 3. On the click, the button publishes a message to channel1
-        // 4. On receipt of a message, the div publishes a message to channel2
-        // 5. The timer just continuously generates a message on channel3.
-        let counter = 0;
-        let timerCounter = 10;
+<body>
+   <script type="module">
+      import * as psjs from "./psjs.mjs";
+      import * as elements from "../components/elements.mjs";
 
-        let timer = setInterval(() => {
-            psjs.pub(null, "channel3", `timed publisher: ${timerCounter}`);
-            if (timerCounter-- <= 0) {
-                clearInterval(timer);
-            }
-        }, 1000);
+      // The test is on three channels:
+      // 1. The div subscribes to channel1 and channel3
+      // 2. The button subscribes to channel2
+      // 3. On the click, the button publishes a message to channel1
+      // 4. On receipt of a message, the div publishes a message to channel2
+      // 5. The timer just continuously generates a message on channel3.
+      let counter = 0;
+      let timerCounter = 10;
 
-         let content = elements.Div()
-            .push (elements.Label("The Label for the button"))
-            .push(elements.Button("Initial Button Text")
-               .classListAdd("s1", "s2", "s3")
-               .setAttribute("name", "TheButton")
-               .runFunc(function () {
-                  this.setAttribute("testName", "testValue");
-               })
-               .addEventListener("click", (evt) => {
-                  console.log("Event handler for button triggered");
-               })
-               .publishOnEvent("click", "channel1", () => {
-                  return `Button Clicked ${counter} times`;
-               })
-               .subscribe("channel2", function (sender, payload) {
-                  this.setInnerHTML("Publish on clickEvent: " + payload);
-               }))
-            .push(elements.Br())
-            .push(elements.Label("The Label for the div"))
-            .push(elements.Div()
-               .setAttribute("name", "TheDiv")
-               .setInnerHTML("Empty content")
-               .subscribe("channel1", function (sender, payload) {
-                  console.log(`sender=[${sender}], payload=[${payload}]`);
-                  this.innerHTML += "<br>channel1: <tt>" + payload + "</tt>";
-                  this.innerHTML += "<br>publishing on channel2: [" + ++counter + "]";
-                  this.publish("channel2", counter);
-               })
-               .subscribe("channel3", function (sender, payload) {
-                  this.innerHTML += "<br>channel3: <tt>" + payload + "</tt>";
-               }))
-            .attachTo(document.body);
+      let timer = setInterval(() => {
+         psjs.pub(null, "channel3", `timed publisher: ${timerCounter}`);
+         if (timerCounter-- <= 0) {
+            clearInterval(timer);
+         }
+      }, 1000);
 
-      </script>
+      elements.Details("The details tag")
+         // .classListAdd("common-transition")
+         .push(elements.Summary("Click this summary"))
+         .push(elements.Div("This is the content of div1"))
+         .push(elements.Div("This is the content of div2"))
+         .push(elements.Div("This is the content of div3"))
+         .push(elements.Div("This is the content of div4"))
+         .attachTo(document.body);
 
-   </body>
+      elements.Div()
+         .push(elements.Label("The Label for the button"))
+         .push(elements.Button("Initial Button Text")
+            .classListAdd("s1", "s2", "s3")
+            .setAttribute("name", "TheButton")
+            .runFunc(function () {
+               this.setAttribute("testName", "testValue");
+            })
+            .addEventListener("click", (evt) => {
+               console.log("Event handler for button triggered");
+            })
+            .publishOnEvent("click", "channel1", () => {
+               return `Button Clicked ${counter} times`;
+            })
+            .subscribe("channel2", function (sender, payload) {
+               this.setInnerHTML("Publish on clickEvent: " + payload);
+            }))
+         .push(elements.Br())
+         .push(elements.Label("The Label for the div"))
+         .push(elements.Div()
+            .setAttribute("name", "TheDiv")
+            .setInnerHTML("Empty content")
+            .subscribe("channel1", function (sender, payload) {
+               console.log(`sender=[${sender}], payload=[${payload}]`);
+               this.innerHTML += "<br>channel1: <tt>" + payload + "</tt>";
+               this.innerHTML += "<br>publishing on channel2: [" + ++counter + "]";
+               this.publish("channel2", counter);
+            })
+            .subscribe("channel3", function (sender, payload) {
+               this.innerHTML += "<br>channel3: <tt>" + payload + "</tt>";
+            }))
+         .attachTo(document.body);
+
+   </script>
+
+</body>
 
 </html>

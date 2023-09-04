@@ -38,7 +38,7 @@ export function Element(tag, optionalContent) {
     */
    ret.attachTo = (pElement) => {
       let labels = ret.querySelectorAll("label");
-      for (let i=0; i<labels.length; i++) {
+      for (let i = 0; i < labels.length; i++) {
          let label = labels[i];
          if (label.nextSibling) {
             let name = label.nextSibling.getAttribute("name");
@@ -92,7 +92,7 @@ export function Element(tag, optionalContent) {
     */
    ret.classListAdd = (name, ...names) => {
       ret.classList.add(name);
-      for (let i=0; i<names.length; i++) {
+      for (let i = 0; i < names.length; i++) {
          ret.classList.add(names[i]);
       }
       return ret;
@@ -114,7 +114,7 @@ export function Element(tag, optionalContent) {
     */
    ret.classListRemove = (name, ...names) => {
       ret.classList.remove(names)
-      for (let i=0; i<names.length; i++) {
+      for (let i = 0; i < names.length; i++) {
          ret.classList.remove(names[i])
       }
       return ret;
@@ -156,7 +156,7 @@ export function Element(tag, optionalContent) {
     */
    ret.classListToggle = (name, ...names) => {
       ret.classList.toggle(names)
-      for (let i=0; i<names.length; i++) {
+      for (let i = 0; i < names.length; i++) {
          ret.classList.toggle(names[i])
       }
       return ret;
@@ -278,6 +278,18 @@ export function Input(optionalContent) {
 
 export function Label(optionalContent) {
    return Element("label", optionalContent);
+}
+
+export function Span(optionalContent) {
+   return Element("span", optionalContent);
+}
+
+export function Details(optionalContent) {
+   return Element("details", optionalContent);
+}
+
+export function Summary(optionalContent) {
+   return Element("summary", optionalContent);
 }
 
 
