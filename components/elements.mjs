@@ -387,62 +387,48 @@ export function RadioItem(displayText, value) {
 }
 
 
-export function TabbedContainer(name, direction) {
-   let div = Div();
-
-   let tc = RadioGroup(name)
-      .setDirection(direction);
-
+export function TabbedContainer(tabgroup, direction) {
    let moved = false;
-
-   tc.push(div.push(Span()).push(Span()));
-
-   tc.addEventListener("click", function () {
-      if (!moved) {
-         tc.push(Div()
-            .push(Span())
-            .push(Span())
-            .setStyle("height", "0")
-            .setStyle("flexBasis", "100%"));
-         tc.removeChild(div);
-         tc.appendChild(div);
-         moved = true;
-      }
-      for (let i = 0; i < this.children.length; i++) {
-         let ri = this.children[i].children[1] !== undefined ? this.children[i].children[1] : this.children[i];
-         if (ri.checked) {
-            div.innerHTML = this.children[i].getDiv().innerHTML;
-            break;
+   let header = Flex(direction);
+   let content = Div();
+   let tc = Div()
+      .push(header)
+      .push(content)
+      .subscribe(tabgroup, function (sender, payload) {
+         if (!moved) {
+            this.removeChild(content);
+            this.appendChild(content);
+            moved = true;
          }
-      }
-   });
+         content.innerHTML = payload.innerHTML;
+      });
+
+   tc.push = (child) => {
+      header.appendChild(child);
+      return tc;
+   }
+
+   tc.setOpenTab = (index) => {
+      psjs.pub(this, tabgroup, header.children[index].children[0]);
+      return tc;
+   }
 
    return tc;
 }
 
-export function TabbedView(title) {
-   let tv = RadioItem(title)
+export function TabbedView(tabgroup, helement) {
    let div = Div()
       .setStyle("display", "none")
+
+   let tv = helement
+      .publishOnEvent("click", tabgroup, () => {
+         return div;
+      });
 
    tv.push(div);
 
    tv.push = (child) => {
       div.appendChild(child);
-      return tv;
-   }
-
-   tv.getDiv = () => {
-      return div;
-   }
-
-   tv.show = () => {
-      div.setStyle("height", "auto");
-      return tv;
-   }
-
-   tv.hide = () => {
-      div.setStyle("height", "0");
       return tv;
    }
 
