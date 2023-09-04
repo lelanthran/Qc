@@ -77,6 +77,19 @@ export function Element(tag, optionalContent) {
    }
 
    /**
+    * Get a style property. Note that the `name` must be the javascript
+    * property, and not the css property, for e.g. use `flexDirection`
+    * and not `flex-direction`.
+    *
+    * @param {string} name - The name of the style.
+    * @param {string} value - The new value to set the style to.
+    * @return {HTMLElement} - The element.
+    */
+   ret.getStyle = (name) => {
+      return ret.style[name];
+   }
+
+   /**
     * Adds a classname to the element's classlist.
     *
     * The methods .classListAdd(), .classListRemove(), .classListReplace() and
@@ -209,8 +222,12 @@ export function Element(tag, optionalContent) {
     * @return {HTMLElement} - The element.
     */
    ret.publishOnEvent = (evtName, channel, payload) => {
+      let f = () => {
+         return (typeof payload === "function") ? payload.call(ret) : payload;
+      }
+
       ret.addEventListener(evtName, () => {
-         let p = (typeof payload === "function") ? payload() : payload;
+         let p = f();
          psjs.pub(ret, channel, p);
       });
       return ret;
@@ -289,13 +306,22 @@ export function Details(optionalContent) {
 }
 
 export function Summary(optionalContent) {
-   return Element("summary", optionalContent);
+   return Element("summary", optionalContent)
+      .setStyle("cursor", "pointer");
 }
 
+export function Fieldset(optionalContent) {
+   return Element("fieldset", optionalContent);
+}
+
+export function Legend(optionalContent) {
+   return Element("legend", optionalContent);
+}
 
 /**
  * Shorthand for standard elements
  */
+
 export function Flex(flexDirection, optionalContent) {
    return Element("div", optionalContent)
       .setStyle("display", "flex")
@@ -313,4 +339,112 @@ export function PasswordInput(optionalContent) {
       .setAttribute("type", "password");
 }
 
+export function RadioGroup(name) {
 
+   let rg = Div();
+
+   rg.setStyle("display", "flex");
+   rg.setStyle("flexDirection", "row");
+   rg.setStyle("flexWrap", "wrap");
+
+   rg.setDirection = (direction) => {
+      rg.setStyle("flexDirection", direction);
+      return rg;
+   }
+
+   rg.getValue = () => {
+      for (let i = 0; i < rg.children.length; i++) {
+         let element = rg.children[i];
+         if (element.children[1].checked) {
+            return element.children[1].value;
+         }
+      }
+      return null;
+   }
+
+   rg.push = (child) => {
+      rg.appendChild(child);
+      child.children[1].setAttribute("name", name);
+      return rg;
+   }
+
+   return rg;
+}
+
+export function RadioItem(displayText, value) {
+
+   if (value == undefined) {
+      value = displayText;
+   }
+
+   let ri = Div()
+      .push(Label(displayText))
+      .push(Input()
+         .setAttribute("type", "radio")
+         .setAttribute("value", value));
+
+   return ri;
+}
+
+
+export function TabbedContainer(name, direction) {
+   let div = Div();
+
+   let tc = RadioGroup(name)
+      .setDirection(direction);
+
+   let moved = false;
+
+   tc.push(div.push(Span()).push(Span()));
+
+   tc.addEventListener("click", function () {
+      if (!moved) {
+         tc.push(Div()
+            .push(Span())
+            .push(Span())
+            .setStyle("height", "0")
+            .setStyle("flexBasis", "100%"));
+         tc.removeChild(div);
+         tc.appendChild(div);
+         moved = true;
+      }
+      for (let i = 0; i < this.children.length; i++) {
+         let ri = this.children[i].children[1] !== undefined ? this.children[i].children[1] : this.children[i];
+         if (ri.checked) {
+            div.innerHTML = this.children[i].getDiv().innerHTML;
+            break;
+         }
+      }
+   });
+
+   return tc;
+}
+
+export function TabbedView(title) {
+   let tv = RadioItem(title)
+   let div = Div()
+      .setStyle("display", "none")
+
+   tv.push(div);
+
+   tv.push = (child) => {
+      div.appendChild(child);
+      return tv;
+   }
+
+   tv.getDiv = () => {
+      return div;
+   }
+
+   tv.show = () => {
+      div.setStyle("height", "auto");
+      return tv;
+   }
+
+   tv.hide = () => {
+      div.setStyle("height", "0");
+      return tv;
+   }
+
+   return tv;
+}
