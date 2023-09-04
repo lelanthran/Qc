@@ -8,7 +8,7 @@
 export function pub(sender, channel, payload) {
     let handlers = messageHandlerFind(channel);
     if (handlers == null || handlers == undefined || handlers.length == 0) {
-        throw new Error(`No handlers found for channel ${channel}`);
+        // throw new Error(`No handlers found for channel ${channel}`);
     }
     handlers.forEach(h => {
         if (h.func(sender, payload) == true) {

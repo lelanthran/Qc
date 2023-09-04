@@ -40,7 +40,8 @@ export function Element(tag, optionalContent) {
       let labels = ret.querySelectorAll("label");
       for (let i = 0; i < labels.length; i++) {
          let label = labels[i];
-         if (label.nextSibling) {
+         let curAttr = label.getAttribute("for");
+         if (label.nextSibling && curAttr != null && curAttr != undefined) {
             let name = label.nextSibling.getAttribute("name");
             if (name != undefined && name != null) {
                label.setAttribute("for", name);
@@ -293,8 +294,8 @@ export function Input(optionalContent) {
    return ret;
 }
 
-export function Label(optionalContent) {
-   return Element("label", optionalContent);
+export function Label(optionalContent, forName) {
+   return Element("label", optionalContent).setAttribute("for", forName);
 }
 
 export function Span(optionalContent) {
@@ -317,6 +318,12 @@ export function Fieldset(optionalContent) {
 export function Legend(optionalContent) {
    return Element("legend", optionalContent);
 }
+
+export function Checkbox(optionalContent) {
+   return Input(optionalContent)
+      .setAttribute("type", "checkbox");
+}
+
 
 /**
  * Shorthand for standard elements
@@ -394,7 +401,7 @@ export function TabbedContainer(tabgroup, direction) {
    let tc = Div()
       .push(header)
       .push(content)
-      .subscribe(tabgroup, function (sender, payload) {
+      .subscribe(tabgroup + "_internal", function (sender, payload) {
          if (!moved) {
             this.removeChild(content);
             this.appendChild(content);
@@ -409,19 +416,21 @@ export function TabbedContainer(tabgroup, direction) {
    }
 
    tc.setOpenTab = (index) => {
-      psjs.pub(this, tabgroup, header.children[index].children[0]);
+      header.children[index].children[1].setAttribute("checked", true);
+      psjs.pub(this, tabgroup + "_internal", header.children[index].children[1]);
       return tc;
    }
 
    return tc;
 }
 
-export function TabbedView(tabgroup, helement) {
+export function TabbedView(tabgroup, caption) {
    let div = Div()
       .setStyle("display", "none")
 
-   let tv = helement
-      .publishOnEvent("click", tabgroup, () => {
+   let tv = Div()
+      .push(Button(caption))
+      .publishOnEvent("click", tabgroup + "_internal", () => {
          return div;
       });
 
