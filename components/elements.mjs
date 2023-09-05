@@ -219,17 +219,18 @@ export function Element(tag, optionalContent) {
     *
     * @param {string} evtName - the name of the event
     * @param {string} channel - the channel to publish the message on
+    * @param {string} subject - the subject of the message
     * @param {any} payload - the payload to be published
     * @return {HTMLElement} - The element.
     */
-   ret.publishOnEvent = (evtName, channel, payload) => {
+   ret.publishOnEvent = (evtName, channel, subject, payload) => {
       let f = () => {
          return (typeof payload === "function") ? payload.call(ret) : payload;
       }
 
       ret.addEventListener(evtName, () => {
          let p = f();
-         psjs.pub(ret, channel, p);
+         psjs.pub(ret, channel, subject, p);
       });
       return ret;
    }
@@ -238,11 +239,12 @@ export function Element(tag, optionalContent) {
     * A convenience function to publish a message.
     *
     * @param {string} channel - The channel to publish the message to.
+    * @param {string} subject - The subject fo the message.
     * @param {any} payload - The message payload.
     * @return {HTMLElement} - The element.
     */
-   ret.publish = (channel, payload) => {
-      psjs.pub(ret, channel, payload);
+   ret.publish = (channel, subject, payload) => {
+      psjs.pub(ret, channel, subject, payload);
       return ret;
    }
 
@@ -250,12 +252,13 @@ export function Element(tag, optionalContent) {
     * A convenience function to subscribe to a channel.
     *
     * @param {string} channel - The name of the channel to subscribe to.
-    * @param {function} func - The callback function to be executed when a message is received on the channel.
+    * @param {function} func - The callback function on message receipt - `(sender, subject, payload)`.
     * @return {HTMLElement} - The element.
     */
    ret.subscribe = (channel, func) => {
-      let f = (s, p) => {
-         func.call(ret, s, p);
+      let f = (sender, subject, payload) => {
+         psjs.validateParams(ret, sender, subject, payload);
+         func.call(ret, sender, subject, payload);
       }
       psjs.sub(channel, f);
       return ret;
@@ -401,7 +404,7 @@ export function TabbedContainer(tabgroup, direction) {
    let tc = Div()
       .push(header)
       .push(content)
-      .subscribe(tabgroup + "_internal", function (sender, payload) {
+      .subscribe(tabgroup, function (sender, subject, payload) {
          if (!moved) {
             this.removeChild(content);
             this.appendChild(content);
@@ -417,7 +420,10 @@ export function TabbedContainer(tabgroup, direction) {
 
    tc.setOpenTab = (index) => {
       header.children[index].children[1].setAttribute("checked", true);
-      psjs.pub(this, tabgroup + "_internal", header.children[index].children[1]);
+      // TODO: Tabs must only be changed from this function, do a loop and publish
+      // all tabs with a 'selected' field set to true or false, so that the caller can
+      // restyle if necessary.
+      psjs.pub(this, tabgroup, "TABCHANGE", header.children[index].children[1]);
       return tc;
    }
 
@@ -430,7 +436,7 @@ export function TabbedView(tabgroup, caption) {
 
    let tv = Div()
       .push(Button(caption))
-      .publishOnEvent("click", tabgroup + "_internal", () => {
+      .publishOnEvent("click", tabgroup, "TABCHANGE", () => {
          return div;
       });
 

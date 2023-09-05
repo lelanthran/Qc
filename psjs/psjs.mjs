@@ -1,17 +1,31 @@
+// TODO: Enable calls to this when refactoring, remove the calls when done.
+export function validateParams() {
+    for (let i = 0; i < arguments.length; i++) {
+        if (arguments[i] == undefined || arguments[i] == null) {
+            throw new Error(`Argument ${i} is null or undefined`);
+        }
+    }
+}
+
+
 /**
  * Posts a message onto the specified channel. All subscribers to that channel will receive the message
  *
  * @param {string} sender - The sender instance of the message (could be undefined if not sent from an object)
  * @param {string} channel - The name of the channel.
+ * @param {string} subject - A subject for the message.
  * @param {any} payload - The payload of the message.
  */
-export function pub(sender, channel, payload) {
+export function pub(sender, channel, subject, payload) {
+    validateParams(sender, channel, subject, payload);
+
     let handlers = messageHandlerFind(channel);
     if (handlers == null || handlers == undefined || handlers.length == 0) {
         // throw new Error(`No handlers found for channel ${channel}`);
+        return;
     }
     handlers.forEach(h => {
-        if (h.func(sender, payload) == true) {
+        if (h.func(sender, subject, payload) == true) {
             return;
         }
     });
@@ -21,7 +35,7 @@ export function pub(sender, channel, payload) {
  * Subscribes to a channel. Handler will be called with the message that is published to that channel.
  *
  * @param {string} channel - The name of the channel.
- * @param {function} handler - The handler function.
+ * @param {function} handler - The handler function, called with `(sender, subject, payload)`.
  * @return {id} - An id that can be used to unsubscribe this particular subscription
  */
 export function sub(channel, handler) {
