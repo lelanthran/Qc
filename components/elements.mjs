@@ -5,8 +5,13 @@ import * as psjs from "../psjs/psjs.mjs";
  *
  */
 
-// Create an HTMLElement that can be used in a Fluent API
-// 
+/**
+ * Creates a new HTMLElement object with the specified tag and optional content.
+ *
+ * @param {string} tag - The HTML tag of the element.
+ * @param {string} optionalContent - The optional content to be added to the element.
+ * @return {HTMLElement} - The created element.
+ */
 export function Element(tag, optionalContent) {
    let ret = document.createElement(tag);
 
@@ -214,13 +219,20 @@ export function Element(tag, optionalContent) {
    }
 
    /**
+    * This is the function that must be passed to @link pub.
+    * 
+    * @callback GetPayload
+    * @return {any} payload - Any value that can be used as a payload for a message-publishing action.
+    */
+
+   /**
     * A convenience function to publish the message
     * when the element receives the specified event.
     *
     * @param {string} evtName - the name of the event
     * @param {string} channel - the channel to publish the message on
     * @param {string} subject - the subject of the message
-    * @param {any} payload - the payload to be published
+    * @param {string|GetPayload} payload - the payload to be published
     * @return {HTMLElement} - The element.
     */
    ret.publishOnEvent = (evtName, channel, subject, payload) => {
@@ -240,7 +252,7 @@ export function Element(tag, optionalContent) {
     *
     * @param {string} channel - The channel to publish the message to.
     * @param {string} subject - The subject fo the message.
-    * @param {any} payload - The message payload.
+    * @param {string|GetPayload} payload - The message payload.
     * @return {HTMLElement} - The element.
     */
    ret.publish = (channel, subject, payload) => {
@@ -249,10 +261,19 @@ export function Element(tag, optionalContent) {
    }
 
    /**
+    * This is the function that must be passed to @link pub.
+    * 
+    * @callback SubscriptionHandler
+    * @param {string} sender - The sender instance of the message (could be undefined if not sent from an object)
+    * @param {string} subject - A subject for the message.
+    * @param {any} payload - The payload of the message.
+    */
+
+   /**
     * A convenience function to subscribe to a channel.
     *
     * @param {string} channel - The name of the channel to subscribe to.
-    * @param {function} func - The callback function on message receipt - `(sender, subject, payload)`.
+    * @param {SubscriptionHandler} func - The callback function on message receipt - `(sender, subject, payload)`.
     * @return {HTMLElement} - The element.
     */
    ret.subscribe = (channel, func) => {
@@ -289,6 +310,12 @@ export function Br(optionalContent) {
 export function Input(optionalContent) {
    let ret = Element("input", optionalContent);
 
+   /**
+    * Sets the placeholder value for the element.
+    *
+    * @param {string} placeholder - The placeholder text to be displayed in the element.
+    * @return {HTMLElement} - The modified element with the updated placeholder value.
+    */
    ret.setPlaceholder = (placeholder) => {
       ret.setAttribute("placeholder", placeholder);
       return ret;
@@ -328,22 +355,55 @@ export function Checkbox(optionalContent) {
 }
 
 
-/**
+/**************************************************
  * Shorthand for standard elements
  */
 
+/**
+ * Creates a flex container element with the specified flex direction.
+ *
+ * @param {string} flexDirection - The direction in which the flex items will be laid out. Valid values are "row", "row-reverse", "column", and "column-reverse".
+ * @param {string} optionalContent - Optional content to be placed inside the flex container.
+ * @return {HTMLElement} The created flex container element.
+ */
 export function Flex(flexDirection, optionalContent) {
    return Element("div", optionalContent)
       .setStyle("display", "flex")
       .setStyle("flexDirection", flexDirection);
 }
 
-export function Grid(gridTemplateColumns, optionalContent) {
+/**
+ * Creates a GridColumn element with the specified grid template columns and optional content.
+ *
+ * @param {string} gridTemplateColumns - The template for the grid columns.
+ * @param {string} optionalContent - Optional content to be included in the GridColumn element.
+ * @return {HTMLElement} The created GridColumn element.
+ */
+export function GridColumn(gridTemplateColumns, optionalContent) {
    return Element("div", optionalContent)
       .setStyle("display", "grid")
       .setStyle("gridTemplateColumns", gridTemplateColumns);
 }
 
+/**
+ * Creates a GridRow element with the specified grid template rows and optional content.
+ *
+ * @param {string} gridTemplateRows - The CSS grid template rows for the element.
+ * @param {string} optionalContent - Optional content to be added inside the GridRow element.
+ * @return {HTMLElement} The created GridRow element.
+ */
+export function GridRow(gridTemplateRows, optionalContent) {
+   return Element("div", optionalContent)
+      .setStyle("display", "grid")
+      .setStyle("gridTemplateRows", gridTemplateRows);
+}
+
+/**
+ * Creates a password input field.
+ *
+ * @param {any} optionalContent - Optional content to display within the input field.
+ * @return {HTMLElement} The generated password input field.
+ */
 export function PasswordInput(optionalContent) {
    return Input(optionalContent)
       .setAttribute("type", "password");
@@ -397,7 +457,22 @@ export function RadioItem(displayText, value) {
 }
 
 
+/**
+ * Creates a `TabbedContainer` element. A `TabbedContainer` is simply a manager for
+ * TabbedView elements. Each TabbedView element can be `.pushed()` into a `TabbedContainer`.
+ * 
+ * Each TabbedView is displayed as a tab in the TabbedContainer. The container must be
+ * styled by setting the classnames using @link setActiveClass and @link setInactiveClass.
+ *
+ * @param {tabgroup} tabgroup - The tabgroup to which the TabbedContainer belongs.
+ * @param {direction} direction - The direction of the TabbedContainer.
+ * @return {HTMLElement} The TabbedContainer element.
+ */
 export function TabbedContainer(tabgroup, direction) {
+
+   // TODO: Need to have a conditional path for direction="column". Right now
+   // it works fine as a row, but as a column the content is display below the
+   // tab labels and not next to them.
    let moved = false;
    let header = Flex(direction);
    let content = Div();
@@ -409,11 +484,24 @@ export function TabbedContainer(tabgroup, direction) {
    tc._inactiveClass = "TabbedContainerClassInactive";
    tc._activeClass = "TabbedContainerClassActive";
 
+   /**
+    * Appends a child element to the TabbedContainer element and returns the
+    * updated TabbedContainer element.
+    *
+    * @param {HTMLElement} child - The child element to be added to the TabbedContainer.
+    * @return {HTMLElement} - The updated TabbedContainer object.
+    */
    tc.push = (child) => {
       header.appendChild(child);
       return tc;
    }
 
+   /**
+    * Sets the active class for the TabbedContainer element.
+    *
+    * @param {string} name - The name of the active class to be set.
+    * @return {HTMLElement} - The updated object.
+    */
    tc.setActiveClass = (name) => {
       content.classList.remove(tc._activeClass);
       content.classList.add(name);
@@ -421,6 +509,12 @@ export function TabbedContainer(tabgroup, direction) {
       return tc;
    }
 
+   /**
+    * Sets the inactive class for the TaggedContainer Element.
+    *
+    * @param {string} name - The name of the inactive class to set.
+    * @return {HTMLElement} - The TaggedContainer object.
+    */
    tc.setInactiveClass = (name) => {
       header.classList.remove(tc._inactiveClass);
       header.classList.add(name);
@@ -428,6 +522,12 @@ export function TabbedContainer(tabgroup, direction) {
       return tc;
    }
 
+   /**
+    * Sets the open tab based on the given index or object.
+    *
+    * @param {number|TabbedView} idxOrObj - The index or Element representing the tab.
+    * @return {HTMLElement} - The updated TabbedContainer.
+    */
    tc.setOpenTab = (idxOrObj) => {
       if (!moved) {
          tc.removeChild(content);
@@ -454,6 +554,15 @@ export function TabbedContainer(tabgroup, direction) {
    return tc;
 }
 
+/**
+ * Creates a TabbedView component. A TabbedView element must be placed within a
+ * TabbedContainer element, and must have the same `tabgroup` name as the TabbedContainer
+ * that it belongs to.
+ *
+ * @param {string} tabgroup - The TabbedGroup parent of the TabbedView.
+ * @param {string} caption - The caption text for the TabbedView.
+ * @return {HTMLElement} The created TabbedView component.
+ */
 export function TabbedView(tabgroup, caption) {
    let div = Div()
       .setStyle("display", "none")
@@ -474,6 +583,12 @@ export function TabbedView(tabgroup, caption) {
    });
 
 
+   /**
+    * Appends a child element to the TabbedView and returns the updated TabbedView element.
+    *
+    * @param {HTMLElement} child - The child element to be appended to the div.
+    * @return {HTMLElement} - The updated TabbedView element after appending the child element.
+    */
    tv.push = (child) => {
       div.appendChild(child);
       return tv;

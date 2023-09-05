@@ -32,10 +32,19 @@ export function pub(sender, channel, subject, payload) {
 }
 
 /**
+ * This is the function that must be passed to @link pub.
+ * 
+ * @callback SubscriptionHandler
+ * @param {string} sender - The sender instance of the message (could be undefined if not sent from an object)
+ * @param {string} subject - A subject for the message.
+ * @param {any} payload - The payload of the message.
+ */
+
+/**
  * Subscribes to a channel. Handler will be called with the message that is published to that channel.
  *
  * @param {string} channel - The name of the channel.
- * @param {function} handler - The handler function, called with `(sender, subject, payload)`.
+ * @param {SubscriptionHandler} handler - The handler function, called with `(sender, subject, payload)`.
  * @return {id} - An id that can be used to unsubscribe this particular subscription
  */
 export function sub(channel, handler) {
