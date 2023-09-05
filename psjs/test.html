@@ -52,29 +52,59 @@
             .push(elements.RadioItem("radio5")))
          .attachTo(document.body);
 
-      elements.TabbedContainer("MyMenu", "row")
-         .push(elements.TabbedView("MyMenu", "one")
+      // Subscribe to tabview changes for MyTabbedGroup
+      // psjs.sub("MyTabbedGroup", (sender, subject, payload) => {
+      //    console.log(`sender=[${sender}], subject=[${subject}], payload=[${payload}]`);
+      //    if (payload.selected) {
+      //       payload.classList.remove("MyTabbedGroupDeselected");
+      //       payload.classList.add("MyTabbedGroupSelected");
+      //    } else {
+      //       payload.classList.remove("MyTabbedGroupSelected");
+      //       payload.classList.add("MyTabbedGroupDeselected");
+      //    }
+      // });
+
+      elements.TabbedContainer("MyTabbedGroup", "row")
+         .push(elements.TabbedView("MyTabbedGroup", "one")
+            .push(elements.Div("Content One Content One Content One Content One ").classListAdd("Highlight"))
+            .push(elements.Div("Content One Content One Content One Content One "))
+            .push(elements.Div("Content One Content One Content One Content One "))
             .push(elements.Div("Content One Content One Content One Content One "))
             .push(elements.Div("Content One Content One Content One Content One "))
             .push(elements.Div("Content One Content One Content One Content One "))
             .push(elements.Div("Content One Content One Content One Content One ")))
-         .push(elements.TabbedView("MyMenu", "Two")
-            .push(elements.Div("Content Two Content Two Content Two Content Two Content Two "))
-            .push(elements.Div("Content Two Content Two Content Two Content Two Content Two "))
-            .push(elements.Div("Content Two Content Two Content Two Content Two Content Two "))
-            .push(elements.Div("Content Two Content Two Content Two Content Two Content Two "))
-            .push(elements.Div("Content Two Content Two Content Two Content Two Content Two ")))
-         .push(elements.TabbedView("MyMenu", "Three")
+         .push(elements.TabbedView("MyTabbedGroup", "Two")
+            .push(elements.Div("Content Two Content Two Content Two Content Two"))
+            .push(elements.Div("Content Two Content Two Content Two Content Two").classListAdd("Highlight"))
+            .push(elements.Div("Content Two Content Two Content Two Content Two"))
+            .push(elements.Div("Content Two Content Two Content Two Content Two")))
+         .push(elements.TabbedView("MyTabbedGroup", "Three")
+            .push(elements.Div("Content Three Content Three Content Three Content Three "))
+            .push(elements.Div("Content Three Content Three Content Three Content Three "))
+            .push(elements.Div("Content Three Content Three Content Three Content Three ").classListAdd("Highlight"))
+            .push(elements.Div("Content Three Content Three Content Three Content Three "))
+            .push(elements.Div("Content Three Content Three Content Three Content Three "))
+            .push(elements.Div("Content Three Content Three Content Three Content Three "))
+            .push(elements.Div("Content Three Content Three Content Three Content Three "))
+            .push(elements.Div("Content Three Content Three Content Three Content Three "))
+            .push(elements.Div("Content Three Content Three Content Three Content Three "))
+            .push(elements.Div("Content Three Content Three Content Three Content Three "))
+            .push(elements.Div("Content Three Content Three Content Three Content Three "))
             .push(elements.Div("Content Three Content Three Content Three Content Three "))
             .push(elements.Div("Content Three Content Three Content Three Content Three "))
             .push(elements.Div("Content Three Content Three Content Three Content Three "))
             .push(elements.Div("Content Three Content Three Content Three Content Three ")))
-         .push(elements.TabbedView("MyMenu", "Four")
+         .push(elements.TabbedView("MyTabbedGroup", "Four")
             .push(elements.Div("Content Four Content Four Content Four Content Four "))
             .push(elements.Div("Content Four Content Four Content Four Content Four "))
             .push(elements.Div("Content Four Content Four Content Four Content Four "))
-            .push(elements.Div("Content Four Content Four Content Four Content Four ")))
+            .push(elements.Div("Content Four Content Four Content Four Content Four "))
+            .push(elements.Div("Content Four Content Four Content Four Content Four "))
+            .push(elements.Div("Content Four Content Four Content Four Content Four ").classListAdd("Highlight")))
+         .setActiveClass("MyTabbedGroupSelected")
+         .setInactiveClass("MyTabbedGroupDeselected")
          .setOpenTab(2)
+         .classListAdd("MyTabbedGroupContainer")
          .attachTo(document.body);
 
       elements.Details("The details tag")

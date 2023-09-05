@@ -127,7 +127,7 @@ export function Element(tag, optionalContent) {
     * @return {HTMLElement} - The element.
     */
    ret.classListRemove = (name, ...names) => {
-      ret.classList.remove(names)
+      ret.classList.remove(name)
       for (let i = 0; i < names.length; i++) {
          ret.classList.remove(names[i])
       }
@@ -169,7 +169,7 @@ export function Element(tag, optionalContent) {
     * @return {HTMLElement} - The element.
     */
    ret.classListToggle = (name, ...names) => {
-      ret.classList.toggle(names)
+      ret.classList.toggle(name)
       for (let i = 0; i < names.length; i++) {
          ret.classList.toggle(names[i])
       }
@@ -403,27 +403,51 @@ export function TabbedContainer(tabgroup, direction) {
    let content = Div();
    let tc = Div()
       .push(header)
-      .push(content)
-      .subscribe(tabgroup, function (sender, subject, payload) {
-         if (!moved) {
-            this.removeChild(content);
-            this.appendChild(content);
-            moved = true;
-         }
-         content.innerHTML = payload.innerHTML;
-      });
+      .push(content);
+
+   tc._tabgroup = tabgroup;
+   tc._inactiveClass = "TabbedContainerClassInactive";
+   tc._activeClass = "TabbedContainerClassActive";
 
    tc.push = (child) => {
       header.appendChild(child);
       return tc;
    }
 
-   tc.setOpenTab = (index) => {
-      header.children[index].children[1].setAttribute("checked", true);
-      // TODO: Tabs must only be changed from this function, do a loop and publish
-      // all tabs with a 'selected' field set to true or false, so that the caller can
-      // restyle if necessary.
-      psjs.pub(this, tabgroup, "TABCHANGE", header.children[index].children[1]);
+   tc.setActiveClass = (name) => {
+      content.classList.remove(tc._activeClass);
+      content.classList.add(name);
+      tc._activeClass = name;
+      return tc;
+   }
+
+   tc.setInactiveClass = (name) => {
+      header.classList.remove(tc._inactiveClass);
+      header.classList.add(name);
+      tc._inactiveClass = name;
+      return tc;
+   }
+
+   tc.setOpenTab = (idxOrObj) => {
+      if (!moved) {
+         tc.removeChild(content);
+         tc.appendChild(content);
+         moved = true;
+      }
+      let obj = typeof idxOrObj === "object" ? idxOrObj : header.children[idxOrObj];
+      for (let i = 0; i < header.children.length; i++) {
+         let tab = header.children[i];
+         tab.children[0].selected = false;
+         tab.children[0].classListRemove(tc._activeClass);
+         tab.children[0].classListAdd(tc._inactiveClass);
+         if (obj === tab) {
+            tab.children[0].selected = true;
+            tab.children[0].classListRemove(tc._inactiveClass);
+            tab.children[0].classListAdd(tc._activeClass);
+         }
+         psjs.pub(tc, tabgroup, "TABCHANGE", tab.children[0]);
+         content.innerHTML = obj.children[1].innerHTML;
+      }
       return tc;
    }
 
@@ -436,11 +460,19 @@ export function TabbedView(tabgroup, caption) {
 
    let tv = Div()
       .push(Button(caption))
-      .publishOnEvent("click", tabgroup, "TABCHANGE", () => {
-         return div;
-      });
+      .push(div);
 
-   tv.push(div);
+   tv.addEventListener("click", () => {
+      let p = tv;
+      while (p !== undefined && p !== null && p._tabgroup !== tabgroup) {
+         p = p.parentNode;
+      }
+      if (p == undefined || p == null) {
+         throw new Error(`TabbedView [${tabgroup}] does not have a TabbedGroup parent`);
+      }
+      p.setOpenTab(tv);
+   });
+
 
    tv.push = (child) => {
       div.appendChild(child);

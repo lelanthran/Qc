@@ -2,8 +2,25 @@
    transition: display 0.9s ease-in-out;
 }
 
-input:checked {
-   background-color: red;
-   border-width: 1px;
-   border-color: green;
+.MyTabbedGroupSelected {
+   background-color: pink;
+   border-width: 0;
+}
+
+.MyTabbedGroupDeselected {
+   background-color: grey;
+   border-width: 0;
+}
+
+.MyTabbedGroupContainer {
+   max-width: 50%;
+   margin: 0 auto 0 auto;
+   height: 200px;
+   min-height: 200px;
+   overflow: scroll;
+   background-color: aquamarine;
+}
+
+.Highlight {
+   background-color: yellow;
 }
