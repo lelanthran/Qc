@@ -1,5 +1,6 @@
 import * as psjs from "../psjs/psjs.mjs";
 
+
 /* **************************************************************************
  * Some default quick components to enable a Fluent API to DOM construction.
  *
@@ -18,7 +19,6 @@ export function Element(tag, optionalContent) {
    if (optionalContent != undefined && optionalContent != null) {
       ret.textContent = optionalContent;
    }
-
 
    /**
     * Call HTMLElement methods, or any other existing methods, on the
@@ -194,6 +194,23 @@ export function Element(tag, optionalContent) {
       return ret;
    }
 
+   ret.setName = (value) => {
+      ret.setAttribute("name", value);
+      return ret;
+   }
+
+   ret.getNamedValue = (name) => {
+      if (ret.getAttribute("name") === name) {
+         return ret.value;
+      }
+      for (let i = 0; i < ret.children.length; i++) {
+         let v = ret.children[i].getNamedValue(name);
+         if (v != null && v != undefined) {
+            return v;
+         }
+      }
+      return null;
+   }
    /**
     * A wrapper to set the innerHTML of an element.
     *
@@ -470,15 +487,60 @@ export function RadioItem(displayText, value) {
  */
 export function TabbedContainer(tabgroup, direction) {
 
+   let header = Flex(direction);
+
+   function switchActiveTab(activeTv, inactiveTv) {
+
+      let activeButton = activeTv.children[0];
+      let inactiveButton = inactiveTv.children[0];
+
+      let activeDiv = activeTv.children[1];
+      let inactiveDiv = inactiveTv.children[1];
+
+      let activeSibling = activeDiv.nextSibling;
+      let inactiveSibling = inactiveDiv.nextSibling;
+
+      // Add activeDiv to inactiveTv
+      if (inactiveSibling == null) {
+         inactiveTv.appendChild(activeDiv);
+      } else {
+         inactiveTv.insertBefore(activeDiv, inactiveSibling);
+      }
+      // Add inactiveDiv to activeTv
+      if (activeSibling == null) {
+         activeTv.appendChild(inactiveDiv);
+      } else {
+         activeTv.insertBefore(inactiveDiv, activeSibling);
+      }
+
+      // The swap has been done, the inactiveTv is now the activeTv
+      // and the previously activeTv is now the inactiveTv
+
+      // Without switching the classes, the new active will not be
+      // seen, and the new inactive will still remain on screen.
+
+      activeDiv.style["display"] = "none";
+      activeDiv.classList.remove(tc._activeClass);
+      activeButton.classList.remove(tc._activeClass);
+      activeDiv.classList.add(tc._inactiveClass);
+      activeButton.classList.add(tc._inactiveClass);
+
+      inactiveDiv.style["display"] = "block";
+      inactiveDiv.classList.remove(tc._inactiveClass);
+      inactiveButton.classList.remove(tc._inactiveClass);
+      inactiveDiv.classList.add(tc._activeClass);
+      inactiveButton.classList.add(tc._activeClass);
+
+   }
+
    // TODO: Need to have a conditional path for direction="column". Right now
    // it works fine as a row, but as a column the content is display below the
    // tab labels and not next to them.
-   let moved = false;
-   let header = Flex(direction);
-   let content = Div();
    let tc = Div()
       .push(header)
-      .push(content);
+      .push(Div()
+         .push(Div("bUTTON").setStyle("display", "none"))
+         .push(Div("MUST SWAP")));
 
    tc._tabgroup = tabgroup;
    tc._inactiveClass = "TabbedContainerClassInactive";
@@ -493,6 +555,10 @@ export function TabbedContainer(tabgroup, direction) {
     */
    tc.push = (child) => {
       header.appendChild(child);
+      if (tc._ActiveTabView == undefined || tc._ActiveTabView == null) {
+         tc._ActiveTabView = child;
+         switchActiveTab(tc.children[1], tc._ActiveTabView);
+      }
       return tc;
    }
 
@@ -503,8 +569,6 @@ export function TabbedContainer(tabgroup, direction) {
     * @return {HTMLElement} - The updated object.
     */
    tc.setActiveClass = (name) => {
-      content.classList.remove(tc._activeClass);
-      content.classList.add(name);
       tc._activeClass = name;
       return tc;
    }
@@ -516,8 +580,6 @@ export function TabbedContainer(tabgroup, direction) {
     * @return {HTMLElement} - The TaggedContainer object.
     */
    tc.setInactiveClass = (name) => {
-      header.classList.remove(tc._inactiveClass);
-      header.classList.add(name);
       tc._inactiveClass = name;
       return tc;
    }
@@ -529,25 +591,15 @@ export function TabbedContainer(tabgroup, direction) {
     * @return {HTMLElement} - The updated TabbedContainer.
     */
    tc.setOpenTab = (idxOrObj) => {
-      if (!moved) {
-         tc.removeChild(content);
-         tc.appendChild(content);
-         moved = true;
+      let tv = typeof idxOrObj === "object" ? idxOrObj : header.children[idxOrObj];
+      if (tv == tc._ActiveTabView) {
+         return tc;
       }
-      let obj = typeof idxOrObj === "object" ? idxOrObj : header.children[idxOrObj];
-      for (let i = 0; i < header.children.length; i++) {
-         let tab = header.children[i];
-         tab.children[0].selected = false;
-         tab.children[0].classListRemove(tc._activeClass);
-         tab.children[0].classListAdd(tc._inactiveClass);
-         if (obj === tab) {
-            tab.children[0].selected = true;
-            tab.children[0].classListRemove(tc._inactiveClass);
-            tab.children[0].classListAdd(tc._activeClass);
-         }
-         psjs.pub(tc, tabgroup, "TABCHANGE", tab.children[0]);
-         content.innerHTML = obj.children[1].innerHTML;
-      }
+
+      // TODO: make buttons use proper classes.
+      switchActiveTab(tc.children[1], tc._ActiveTabView);
+      tc._ActiveTabView = tv;
+      switchActiveTab(tc.children[1], tv);
       return tc;
    }
 
