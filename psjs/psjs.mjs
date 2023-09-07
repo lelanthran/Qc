@@ -19,7 +19,7 @@ export function validateParams() {
 export function pub(sender, channel, subject, payload) {
     validateParams(sender, channel, subject, payload);
 
-    let handlers = messageHandlerFind(channel);
+    let handlers = findHandlers(channel, subject);
     if (handlers == null || handlers == undefined || handlers.length == 0) {
         // throw new Error(`No handlers found for channel ${channel}`);
         return;
@@ -47,8 +47,8 @@ export function pub(sender, channel, subject, payload) {
  * @param {SubscriptionHandler} handler - The handler function, called with `(sender, subject, payload)`.
  * @return {id} - An id that can be used to unsubscribe this particular subscription
  */
-export function sub(channel, handler) {
-    return messageHandlerAdd(channel, handler);
+export function sub(channel, subject, handler) {
+    return messageHandlerAdd(channel, subject, handler);
 }
 
 /**
@@ -58,53 +58,112 @@ export function sub(channel, handler) {
  * @param {string} id - The ID of the message handler to remove.
  * @return {void} This function does not return a value.
  */
-export function unsub(channel, id) {
-    messageHandlerRemove(channel, id);
+export function unsub(channel, subject, id) {
+    removeHandler(id);
 }
 
-/**
- * The datastructure that holds all the message handlers. It
- * is a Map of message names to arrays of handler functions.
- * key = string
- * value = handler function array
- */
 let id = 0;
 function getNextId() {
     return id++ % (Number.MAX_SAFE_INTEGER - 1);
 }
 
-const messageHandlers = new Map();
-function messageHandlerAdd(channel, handler) {
-    let handlers = messageHandlers.get(channel);
-    let id = getNextId();
-    if (handlers != null) {
-        handlers.push({
-            id: id,
-            func: handler
-        });
-    } else {
-        handlers = [{
-            id: id,
-            func: handler
-        }];
-    }
-    messageHandlers.set(channel, handlers);
-    return id;
-}
+/*****************************************************************************
+ * The backing datastructure for all the message handlers. It's
+ * a Map of channel names to a Map of subject names to an array of
+ * handlers.
+ * 
+ * Conceptually, using static types ala C++, it would look like this:
+ *  Map<string, Map<string, Array<HandlerFunc>>>
+ * 
+ */
 
-function messageHandlerRemove(channel, id) {
-    let handlers = messageHandlers.get(channel);
-    let newHandlers = [];
-    handlers.forEach((handler) => {
-        if (handler.id != id) {
-            newHandlers.push(handler);
+/**
+ * @typedef {object} HandlerType
+ * @property {id} name - The id of the handler
+ * @property {SubscriptionHandler} handler - The handler function
+ */
+
+const channelMap = new Map();
+/**
+ * Finds and returns the handlers associated with the given channel name and subject.
+ *
+ * @param {string} channelName - The name of the channel to search for handlers.
+ * @param {string} subject - The subject to match with the channel's handlers.
+ * @return {Array} A immutable array of @link HandlerType objects.
+ */
+function findHandlers(channelName, subject) {
+    let subjectMap = channelMap.get(channelName);
+    if (subjectMap == null) {
+        return [];
+    }
+    if (subject == null || subject.length == 0) {
+        return [];
+    }
+
+    let ret = [];
+    Array.from(subjectMap.keys()).forEach((k) => {
+        if ((k === subject || k.length == 0)) {
+            ret = ret.concat(subjectMap.get(k));
         }
     });
-    messageHandlers.set(channel, newHandlers);
+    return ret;
 }
 
-function messageHandlerFind(channel) {
-    return messageHandlers.get(channel);
+/**
+ * Sets the handler for a given channel and subject.
+ *
+ * @param {string} channelName - The name of the channel.
+ * @param {string} subject - The subject to set the handler for.
+ * @param {HandlerType} handler - The handler instance.
+ */
+function setHandler(channelName, subject, handler) {
+    let subjectMap = channelMap.get(channelName);
+    if (subjectMap == null) {
+        subjectMap = new Map();
+        channelMap.set(channelName, subjectMap);
+    }
+    let handlers = subjectMap.get(subject);
+    if (handlers == null) {
+        handlers = [];
+    }
+    handlers.push(handler);
+    subjectMap.set(subject, handlers);
+}
+
+
+/**
+ * Removes the subscription with the specified ID.
+ *
+ * @param {number} id - The ID of the handler to remove.
+ * @return {undefined} This function does not return a value.
+ */
+function removeHandler(id) {
+    channelMap.forEach((subjectMap) => {
+        subjectMap.forEach((handlers, subject) => {
+            handlers.forEach((handler) => {
+                if (handler.id == id) {
+                    handlers.splice(handlers.indexOf(handler), 1);
+                }
+            });
+        });
+    });
+}
+
+/**
+ * Adds a message handler for a specific channel and subject.
+ *
+ * @param {string} channel - The channel to add the message handler to.
+ * @param {string} subject - The subject to add the message handler to.
+ * @param {SubscriptionHandler} func - The function to handle the message.
+ * @return {number} The ID of the added message handler that can be used to unsubscribe.
+ */
+function messageHandlerAdd(channel, subject, func) {
+    let id = getNextId();
+    setHandler(channel, subject, {
+        id: id,
+        func: func
+    });
+    return id;
 }
 
 

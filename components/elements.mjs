@@ -290,15 +290,16 @@ export function Element(tag, optionalContent) {
     * A convenience function to subscribe to a channel.
     *
     * @param {string} channel - The name of the channel to subscribe to.
+    * @param {string} subject - The subject to subscribe to.
     * @param {SubscriptionHandler} func - The callback function on message receipt - `(sender, subject, payload)`.
     * @return {HTMLElement} - The element.
     */
-   ret.subscribe = (channel, func) => {
+   ret.subscribe = (channel, subject, func) => {
       let f = (sender, subject, payload) => {
          psjs.validateParams(ret, sender, subject, payload);
          func.call(ret, sender, subject, payload);
       }
-      psjs.sub(channel, f);
+      psjs.sub(channel, subject, f);
       return ret;
    }
 

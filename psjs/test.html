@@ -32,7 +32,7 @@
       let timerCounter = 10;
 
       let timer = setInterval(() => {
-         psjs.pub({}, "channel3", "subject: counter", `timed publisher: ${timerCounter}`);
+         psjs.pub({}, "channel3", "counter", `timed publisher: ${timerCounter}`);
          if (timerCounter-- <= 0) {
             clearInterval(timer);
          }
@@ -41,7 +41,7 @@
       elements.Fieldset()
          .push(elements.Legend("This is the legend"))
          .push(elements.RadioGroup("Group1", "Legend for group1")
-            .publishOnEvent("click", "channel1", "subject: radiogroup", function () {
+            .publishOnEvent("click", "channel1", "radiogroup", function () {
                return "Radio Group Clicked: " + this.getValue();
             })
             .setDirection("column")
@@ -127,25 +127,25 @@
             .addEventListener("click", (evt) => {
                console.log("Event handler for button triggered");
             })
-            .publishOnEvent("click", "channel1", "subject: counter-update", () => {
+            .publishOnEvent("click", "channel1", "counter-update", () => {
                return `Button Clicked ${counter} times`;
             })
-            .subscribe("channel2", function (sender, subject, payload) {
-               this.setInnerHTML("Publish on clickEvent: " + payload);
+            .subscribe("channel2", "", function (sender, subject, payload) {
+               this.setInnerHTML(`Found ~{subject} on clickEvent:  ${payload}`);
             }))
          .push(elements.Br())
          .push(elements.Label("The Label for the div"))
          .push(elements.Div()
             .setAttribute("name", "TheDiv")
             .setInnerHTML("Empty content")
-            .subscribe("channel1", function (sender, subject, payload) {
-               console.log(`sender=[${sender}], payload=[${payload}]`);
-               this.innerHTML += "<br>channel1: <tt>" + payload + "</tt>";
-               this.innerHTML += "<br>publishing on channel2: [" + ++counter + "]";
-               this.publish("channel2", "subject: republished", counter);
+            .subscribe("channel1", "", function (sender, subject, payload) {
+               console.log(`sender=[${sender}], subject=${subject}, payload=[${payload}]`);
+               this.innerHTML += "<br>channel1: <tt>" + `${subject}:` + payload + "</tt>";
+               this.innerHTML += "<br>Republishing on channel2: [" + ++counter + "]";
+               this.publish("channel2", "republished", counter);
             })
-            .subscribe("channel3", function (sender, subject, payload) {
-               this.innerHTML += "<br>channel3: <tt>" + payload + "</tt>";
+            .subscribe("channel3", "counter", function (sender, subject, payload) {
+               this.innerHTML += `<br>channel3: ${subject}:<tt>` + payload + "</tt>";
             }))
          .attachTo(document.body);
 
