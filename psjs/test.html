@@ -29,7 +29,25 @@
       // 4. On receipt of a message, the div publishes a message to channel2
       // 5. The timer just continuously generates a message on channel3.
       let counter = 0;
-      let timerCounter = 10;
+      let timerCounter = 3;
+
+      let modal = elements.Modal()
+         .push(elements.Div("This is a modal dialog"))
+         .push(elements.Div("Here is some content"))
+         .attachTo(document.body);
+
+      let modalResult = undefined;
+      psjs.sub("DIALOG", "show", (sender, subject, payload) => {
+         modalResult = modal.show();
+         setTimeout(() => {
+            psjs.pub({}, "DIALOG", "hide", "");
+         }, 4000);
+      });
+
+      psjs.sub("DIALOG", "hide", (sender, subject, payload) => {
+         modalResult.hide();
+         console.log(modalResult);
+      });
 
       let timer = setInterval(() => {
          psjs.pub({}, "channel3", "counter", `timed publisher: ${timerCounter}`);
@@ -37,6 +55,10 @@
             clearInterval(timer);
          }
       }, 1000);
+
+      elements.Button("Push this button")
+         .publishOnEvent("click", "DIALOG", "show", "")
+         .attachTo(document.body);
 
       elements.Fieldset()
          .push(elements.Legend("This is the legend"))

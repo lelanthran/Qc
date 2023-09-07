@@ -488,8 +488,6 @@ export function RadioItem(displayText, value) {
  */
 export function TabbedContainer(tabgroup, direction) {
 
-   let header = Flex(direction);
-
    function switchActiveTab(activeTv, inactiveTv) {
 
       let activeButton = activeTv.children[0];
@@ -537,6 +535,8 @@ export function TabbedContainer(tabgroup, direction) {
    // TODO: Need to have a conditional path for direction="column". Right now
    // it works fine as a row, but as a column the content is display below the
    // tab labels and not next to them.
+   let header = Flex(direction)
+
    let tc = Div()
       .push(header)
       .push(Div()
@@ -657,4 +657,21 @@ export function TabbedView(tabgroup, caption) {
    }
 
    return tv;
+}
+
+export function Modal() {
+   console.log("TODO: unimplemented");
+   let div = Div();
+
+   div.show = () => {
+      div.innerHTML += "Showing";
+      return div;
+   }
+
+   div.hide = () => {
+      div.innerHTML += "Hiding";
+      return div;
+   }
+
+   return div;
 }
