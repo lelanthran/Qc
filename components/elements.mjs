@@ -556,9 +556,14 @@ export function TabbedContainer(tabgroup, direction) {
     */
    tc.push = (child) => {
       header.appendChild(child);
-      if (tc._ActiveTabView == undefined || tc._ActiveTabView == null) {
-         tc._ActiveTabView = child;
-         switchActiveTab(tc.children[1], tc._ActiveTabView);
+      if (tc._activeTabView == undefined || tc._activeTabView == null) {
+         tc._activeTabView = child;
+         switchActiveTab(tc.children[1], tc._activeTabView);
+      } else {
+         child.children[0].classList.remove(tc._activeClass);
+         child.children[0].classList.add(tc._inactiveClass);
+         child.children[1].classList.remove(tc._activeClass);
+         child.children[1].classList.add(tc._inactiveClass);
       }
       return tc;
    }
@@ -593,13 +598,17 @@ export function TabbedContainer(tabgroup, direction) {
     */
    tc.setOpenTab = (idxOrObj) => {
       let tv = typeof idxOrObj === "object" ? idxOrObj : header.children[idxOrObj];
-      if (tv == tc._ActiveTabView) {
+      if (tv == tc._activeTabView) {
          return tc;
       }
 
       // TODO: make buttons use proper classes.
-      switchActiveTab(tc.children[1], tc._ActiveTabView);
-      tc._ActiveTabView = tv;
+      switchActiveTab(tc.children[1], tc._activeTabView);
+      tc._activeTabView.children[0].classList.remove(tc._activeClass);
+      tc._activeTabView.children[0].classList.add(tc._inactiveClass);
+      tc._activeTabView.children[1].classList.remove(tc._activeClass);
+      tc._activeTabView.children[1].classList.add(tc._inactiveClass);
+      tc._activeTabView = tv;
       switchActiveTab(tc.children[1], tv);
       return tc;
    }

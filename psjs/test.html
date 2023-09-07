@@ -65,6 +65,8 @@
       // });
 
       elements.TabbedContainer("MyTabbedGroup", "row")
+         .setActiveClass("MyTabbedGroupSelected")
+         .setInactiveClass("MyTabbedGroupDeselected")
          .push(elements.TabbedView("MyTabbedGroup", "one")
             .push(elements.Div("Content One Content One Content One Content One ").classListAdd("Highlight"))
             .push(elements.Div("Content One Content One Content One Content One "))
@@ -101,8 +103,6 @@
             .push(elements.Div("Content Four Content Four Content Four Content Four "))
             .push(elements.Div("Content Four Content Four Content Four Content Four "))
             .push(elements.Div("Content Four Content Four Content Four Content Four ").classListAdd("Highlight")))
-         .setActiveClass("MyTabbedGroupSelected")
-         .setInactiveClass("MyTabbedGroupDeselected")
          .setOpenTab(2)
          .classListAdd("MyTabbedGroupContainer")
          .attachTo(document.body);
@@ -131,7 +131,7 @@
                return `Button Clicked ${counter} times`;
             })
             .subscribe("channel2", "", function (sender, subject, payload) {
-               this.setInnerHTML(`Found ~{subject} on clickEvent:  ${payload}`);
+               this.setInnerHTML(`Found ${subject} on clickEvent:  ${payload}`);
             }))
          .push(elements.Br())
          .push(elements.Label("The Label for the div"))
