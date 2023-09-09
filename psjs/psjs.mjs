@@ -102,7 +102,7 @@ function findHandlers(channelName, subject) {
 
     let ret = [];
     Array.from(subjectMap.keys()).forEach((k) => {
-        if ((k === subject || k.length == 0)) {
+        if (k == null || k == "" || k === subject) {
             ret = ret.concat(subjectMap.get(k));
         }
     });

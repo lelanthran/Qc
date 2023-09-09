@@ -194,11 +194,48 @@ export function Element(tag, optionalContent) {
       return ret;
    }
 
+   /**
+    * Set the name attribute of the object.
+    *
+    * @param {string} value - the value to set for the name attribute
+    * @return {HTMLElement} - the modified object
+    */
    ret.setName = (value) => {
       ret.setAttribute("name", value);
       return ret;
    }
 
+   /**
+    * Replaces the current element with a new element.
+    *
+    * @param {HTMLElement} newElement - The new element to replace the current element with.
+    * @return {HTMLElement} The new element that replaces the current element.
+    */
+   ret.Replace = (newElement) => {
+      let parent = ret.parentElement;
+      parent.replaceChild(newElement, ret);
+      return newElement;
+   }
+
+   /**
+    * Sets the ID for the object.
+    *
+    * @param {string} id - The ID value to set.
+    * @return {HTMLElement} - The updated object with the new ID value.
+    */
+   ret.setId = (id) => {
+      ret.id = id;
+      return ret;
+   }
+
+   /**
+    * Searches the element and its children recursively for an element with
+    * the attribute "name" as specified by @param name, and returns the value
+    * of that element.
+    *
+    * @param {string} name - The name of the element
+    * @return {string} The value of the named attribute, or null if not found.
+    */
    ret.getNamedValue = (name) => {
       if (ret.getAttribute("name") === name) {
          return ret.value;
@@ -211,6 +248,7 @@ export function Element(tag, optionalContent) {
       }
       return null;
    }
+
    /**
     * A wrapper to set the innerHTML of an element.
     *
