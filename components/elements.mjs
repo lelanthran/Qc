@@ -249,6 +249,18 @@ export function Element(tag, optionalContent) {
       return null;
    }
 
+   ret.findNamedAncestor = (name) => {
+      if (ret.getAttribute("name") == name) {
+         return ret;
+      }
+      if (ret.parentElement == null
+         || ret.parentElement == undefined
+         || ret.parentElement.findNamedAncestor == undefined) {
+         throw Error(`Failed to find ancestor ${name}: stopped at parent ${ret.getAttribute("name")}`);
+      }
+      return ret.parentElement.findNamedAncestor(name);
+   }
+
    /**
     * A wrapper to set the innerHTML of an element.
     *
@@ -697,19 +709,27 @@ export function TabbedView(tabgroup, caption) {
    return tv;
 }
 
-export function Modal() {
+export function Dialog() {
    console.log("TODO: unimplemented");
-   let div = Div();
+   let ret = Element("dialog");
 
-   div.show = () => {
-      div.innerHTML += "Showing";
-      return div;
+   ret._show = ret.show;
+   ret.show = () => {
+      ret._show();
+      return ret;
    }
 
-   div.hide = () => {
-      div.innerHTML += "Hiding";
-      return div;
+   ret._showModal = ret.showModal;
+   ret.showModal = () => {
+      ret._showModal();
+      return ret;
    }
 
-   return div;
+   ret._close = ret.close;
+   ret.close = (value) => {
+      ret._close(value);
+      return ret;
+   }
+
+   return ret;
 }

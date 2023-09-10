@@ -31,22 +31,33 @@
       let counter = 0;
       let timerCounter = 3;
 
-      let modal = elements.Modal()
+      let modal = elements.Dialog()
+         .setName("TheDialog")
          .push(elements.Div("This is a modal dialog"))
          .push(elements.Div("Here is some content"))
+         .push(elements.Button("Save")
+            .addEventListener("click", function (evt) {
+               this.findNamedAncestor("TheDialog").close("SAVE");
+            }))
+         .push(elements.Button("Cancel")
+            .addEventListener("click", function (evt) {
+               this.findNamedAncestor("TheDialog").close("CANCEL");
+            }))
+         .subscribe("DIALOG", "show", function (sender, subject, payload) {
+            this.findNamedAncestor("TheDialog").showModal();
+         })
+         .publishOnEvent("close", "DIALOG", "close", function () {
+            return this.returnValue;
+         })
          .attachTo(document.body);
 
-      let modalResult = undefined;
-      psjs.sub("DIALOG", "show", (sender, subject, payload) => {
-         modalResult = modal.show();
-         setTimeout(() => {
-            psjs.pub({}, "DIALOG", "hide", "");
-         }, 4000);
-      });
+      elements.Button("Show Dialog")
+         .publishOnEvent("click", "DIALOG", "show", "")
+         .attachTo(document.body);
 
-      psjs.sub("DIALOG", "hide", (sender, subject, payload) => {
-         modalResult.hide();
-         console.log(modalResult);
+      psjs.sub("DIALOG", "close", function (sender, subject, payload) {
+         console.log(`DIALOG CLOSED: sender=[${sender}], subject=[${subject}], payload=[${payload}]`);
+         console.log(`DIALOG CLOSED: ${sender.returnValue}`);
       });
 
       let timer = setInterval(() => {
@@ -55,10 +66,6 @@
             clearInterval(timer);
          }
       }, 1000);
-
-      elements.Button("Push this button")
-         .publishOnEvent("click", "DIALOG", "show", "")
-         .attachTo(document.body);
 
       elements.Fieldset()
          .push(elements.Legend("This is the legend"))
