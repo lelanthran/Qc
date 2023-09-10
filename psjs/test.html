@@ -31,6 +31,8 @@
       let counter = 0;
       let timerCounter = 3;
 
+      // /////////////////////////////////////////////////////////////////////////
+      // Test of the dialog
       let modal = elements.Dialog()
          .setName("TheDialog")
          .push(elements.Div("This is a modal dialog"))
@@ -60,6 +62,9 @@
          console.log(`DIALOG CLOSED: ${sender.returnValue}`);
       });
 
+      // /////////////////////////////////////////////////////////////////////////
+      // General testing of delivering messages on a channel. A div below subscribes
+      // to this channel for this specific message, thn displays it in th div.
       let timer = setInterval(() => {
          psjs.pub({}, "channel3", "counter", `timed publisher: ${timerCounter}`);
          if (timerCounter-- <= 0) {
@@ -67,6 +72,9 @@
          }
       }, 1000);
 
+      // /////////////////////////////////////////////////////////////////////////
+      // Checking that the radio group works - we publish every change, the div below
+      // subscribes to the radio-group change channel and displays the value.
       elements.Fieldset()
          .push(elements.Legend("This is the legend"))
          .push(elements.RadioGroup("Group1", "Legend for group1")
@@ -81,18 +89,8 @@
             .push(elements.RadioItem("radio5")))
          .attachTo(document.body);
 
-      // Subscribe to tabview changes for MyTabbedGroup
-      // psjs.sub("MyTabbedGroup", (sender, subject, payload) => {
-      //    console.log(`sender=[${sender}], subject=[${subject}], payload=[${payload}]`);
-      //    if (payload.selected) {
-      //       payload.classList.remove("MyTabbedGroupDeselected");
-      //       payload.classList.add("MyTabbedGroupSelected");
-      //    } else {
-      //       payload.classList.remove("MyTabbedGroupSelected");
-      //       payload.classList.add("MyTabbedGroupDeselected");
-      //    }
-      // });
-
+      // /////////////////////////////////////////////////////////////////////////
+      // Test of the tabbed view/tabbed containers
       elements.TabbedContainer("MyTabbedGroup", "row")
          .setActiveClass("MyTabbedGroupSelected")
          .setInactiveClass("MyTabbedGroupDeselected")
@@ -136,7 +134,12 @@
          .classListAdd("MyTabbedGroupContainer")
          .attachTo(document.body);
 
-      elements.Details("The details tag")
+
+      // ///////////////////////////////////////////////////////////////////////
+      // Test that details/summary works. This apparently cannot be animated
+      // unfortunately (well, not without so much work that I may as well just
+      // reimplement it using divs from scratch)
+      elements.Details("The details tag").classListAdd("Highlight")
          // .classListAdd("common-transition")
          .push(elements.Summary("Click this summary"))
          .push(elements.Div("This is the content of div1"))
