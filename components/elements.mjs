@@ -709,27 +709,138 @@ export function TabbedView(tabgroup, caption) {
    return tv;
 }
 
-export function Dialog() {
-   console.log("TODO: unimplemented");
-   let ret = Element("dialog");
+/**
+ * Creates a dialog element.
+ *
+ * @return {HTMLDialogElement} The created dialog element.
+ */
+export function Dialog(optionalContent) {
+   let ret = Element(optionalContent);
 
    ret._show = ret.show;
+   /**
+    * Shows the dialog as a standard non-modal dialog. The caller can retrieve the
+    * value of the dialog element by reading `.returnValue`.
+    *
+    * @return {HTMLDialogElement} The dialog element.
+    */
    ret.show = () => {
       ret._show();
       return ret;
    }
 
    ret._showModal = ret.showModal;
+   /**
+    * Shows the dialog as a modal dialog. The caller can retrieve the
+    * value of the dialog element by reading `.returnValue`.
+    *
+    * @return {HTMLDialogElement} - The dialog element.
+    */
    ret.showModal = () => {
       ret._showModal();
       return ret;
    }
 
    ret._close = ret.close;
+   /**
+    * Closes the dialog if it is currently open. The caller can retrieve the
+    * value of the dialog element by reading `.returnValue`.
+    *
+    * @param {any} value - The value to be passed to the _close function.
+    * @return {HTMLDialogElement} The dialog element.
+    */
    ret.close = (value) => {
       ret._close(value);
       return ret;
    }
 
    return ret;
+}
+
+
+/**
+ * Creates a new MenuContainer with optional display content.
+ *
+ * @param {string} optionalContent - Optional content to be displayed.
+ * @return {HTMLElement} The newly created MenuContainer element.
+ */
+export function MenuContainer(optionalContent) {
+   let ret = Div(optionalContent);
+
+   /**
+    * Adds a child MenuItem to the MenuContainer. The child MenuItem must be an
+    * instance of a HTMLDetailsElement.
+    *
+    * @param {HTMLDetailsElement} child - The child element to add.
+    * @throws {Error} Throws an error if the child is not an instance of HTMLDetailsElement.
+    * @return {HTMLElement} The updated list of elements.
+    */
+   ret.push = (child) => {
+      let iname = child instanceof HTMLDetailsElement;
+      console.log("" + iname);
+      if (!(child instanceof HTMLDetailsElement)) {
+         throw new Error("child must be a details element");
+      }
+      ret.appendChild(child);
+      return ret;
+   }
+
+   /**
+    * Closes all MenuItems of the MenuContainer.
+    *
+    * @return {HTMLElement} ret - The updated MenuContainer with all MenuItems closed.
+    */
+   ret.closeAll = () => {
+      for (let i = 0; i < ret.children.length; i++) {
+         ret.children[i].open = false;
+      }
+      return ret;
+   }
+
+   /**
+    * Opens all MenuItems of the MenuContainer.
+    *
+    * @return {HTMLElement} ret - The updated MenuContainer with all MenuItems opened.
+    */
+   ret.openAll = () => {
+      for (let i = 0; i < ret.children.length; i++) {
+         ret.children[i].open = true;
+      }
+      return ret;
+   }
+
+   /**
+    * Opens the MenuItem by index of the MenuContainer.
+    *
+    * @param {number} index - The index of the MenuItem to be opened.
+    * @return {HTMLElement} ret - The updated MenuContainer with the specified MenuItem open 
+    */
+   ret.open = (index) => {
+      ret.children[index].open = true;
+      return ret;
+   }
+
+   /**
+    * Closes the MenuItem by index of the MenuContainer.
+    *
+    * @param {number} index - The index of the MenuItem to be closed.
+    * @return {HTMLElement} ret - The updated MenuContainer with the specified MenuItem closed.
+    */
+   ret.close = (index) => {
+      ret.children[index].open = false;
+      return ret;
+   }
+
+   return ret;
+}
+
+/**
+ * Creates a new MenuItem with a specified title.
+ *
+ * @param {string} title - The optional content to be displayed in the MenuItem.
+ * @return {HTMLElement} The created MenuItem.
+ */
+export function MenuItem(title) {
+   return Details()
+      .push(Summary(title));
 }

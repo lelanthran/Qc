@@ -31,6 +31,8 @@
       let counter = 0;
       let timerCounter = 3;
 
+
+
       // /////////////////////////////////////////////////////////////////////////
       // Test of the dialog
       let modal = elements.Dialog()
@@ -62,6 +64,8 @@
          console.log(`DIALOG CLOSED: ${sender.returnValue}`);
       });
 
+
+
       // /////////////////////////////////////////////////////////////////////////
       // General testing of delivering messages on a channel. A div below subscribes
       // to this channel for this specific message, thn displays it in th div.
@@ -71,6 +75,10 @@
             clearInterval(timer);
          }
       }, 1000);
+
+
+
+
 
       // /////////////////////////////////////////////////////////////////////////
       // Checking that the radio group works - we publish every change, the div below
@@ -88,6 +96,8 @@
             .push(elements.RadioItem("radio4"))
             .push(elements.RadioItem("radio5")))
          .attachTo(document.body);
+
+
 
       // /////////////////////////////////////////////////////////////////////////
       // Test of the tabbed view/tabbed containers
@@ -147,6 +157,55 @@
          .push(elements.Div("This is the content of div3"))
          .push(elements.Div("This is the content of div4"))
          .attachTo(document.body);
+
+
+
+      // /////////////////////////////////////////////////////////////////////////
+      // Ensure that menus work.
+      let menu = elements.MenuContainer("The Menu Title")
+         .push(elements.MenuItem("Title 1")
+            .push(elements.Div("Contents of menu item 1").setStyle("background-color: #ffcccc"))
+            .push(elements.Div("More Content").setStyle("background-color: #ccffcc"))
+            .push(elements.Div(
+               "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do " +
+               "eiusmod tempor incididunt ut labore dolore magna aliqua. Ut " +
+               "enim ad minim veniam, quis nostrud ullamco laboris nisi " +
+               "ut aliquip ex ea commodo. ")
+               .setStyle("background-color: #ccccff")))
+
+         .push(elements.MenuItem("Title for Item 2")
+            .push(elements.Div("Contents of menu item 2").setStyle("background-color: #ffcccc"))
+            .push(elements.Div("More Content").setStyle("background-color: #ccffcc"))
+            .push(elements.Div(
+               "Lorem ipsum dolor sit amet, adipiscing elit, sed do " +
+               "eiusmod incididunt ut labore et dolore magna aliqua. Ut " +
+               "enim ad minim, quis nostrud exercitation ullamco laboris nisi " +
+               "ut aliquip ea commodo consequat. ")
+               .setStyle("background-color: #ccccff")))
+
+         .push(elements.MenuItem("Title for Item 3")
+            .push(elements.Div("Contents of menu item 3").setStyle("background-color: #ffcccc"))
+            .push(elements.Div("More Content").setStyle("background-color: #ccffcc"))
+            .push(elements.Div(
+               "Lorem dolor sit amet, consectetur adipiscing elit, sed do " +
+               "eiusmod tempor incididunt ut labore et dolore magna . Ut " +
+               "enim ad minim veniam, quis nostrud exercitation nisi " +
+               "ut aliquip ex ea commodo. ")
+               .setStyle("background-color: #ccccff")))
+         .open(1)
+         .attachTo(document.body);
+
+      elements.Button("Open all")
+         .addEventListener("click", function (evt) {
+            menu.openAll();
+         })
+         .attachTo(document.body);
+      elements.Button("Close all")
+         .addEventListener("click", function (evt) {
+            menu.closeAll();
+         })
+         .attachTo(document.body);
+
 
       elements.Div()
          .push(elements.Label("The Label for the button"))
