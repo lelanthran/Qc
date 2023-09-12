@@ -69,10 +69,23 @@
       // /////////////////////////////////////////////////////////////////////////
       // General testing of delivering messages on a channel. A div below subscribes
       // to this channel for this specific message, thn displays it in th div.
-      let timer = setInterval(() => {
+      let timer = setInterval(async () => {
          psjs.pub({}, "channel3", "counter", `timed publisher: ${timerCounter}`);
          if (timerCounter-- <= 0) {
             clearInterval(timer);
+            let actualHashCode = await elements.calculateHash('SHA-1', document.body);
+            // NOTE: This must be updated each time a change is made that changes document.body.
+            let expectedHashCode = "f90afbb1d935dcdc0df4a7b7582bc0c440dd0584";
+            let testMessage = actualHashCode == expectedHashCode
+               ? elements.Div(`PASSED [${expectedHashCode}:${actualHashCode}]`)
+                  .setStyle("color", "green")
+               : elements.Div(`FAILED [${expectedHashCode}:${actualHashCode}]`)
+                  .setStyle("color", "red");
+
+            elements.Div("Hashcode: " + actualHashCode)
+               .attachTo(document.body);
+            elements.Div(testMessage)
+               .attachTo(document.body);
          }
       }, 1000);
 

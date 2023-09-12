@@ -10,14 +10,34 @@ import * as psjs from "../psjs/psjs.mjs";
  * Creates a new HTMLElement object with the specified tag and optional content.
  *
  * @param {string} tag - The HTML tag of the element.
- * @param {string} optionalContent - The optional content to be added to the element.
+ * @param {HTMLELement|string} optionalContent - The optional content to be added to the element.
  * @return {HTMLElement} - The created element.
  */
 export function Element(tag, optionalContent) {
    let ret = document.createElement(tag);
+   let paramSet = false;
 
-   if (optionalContent != undefined && optionalContent != null) {
+   if (ret == null) {
+      throw new Error("Critical: failed to create new element")
+   }
+
+   if (optionalContent == undefined || optionalContent == null) {
+      optionalContent = "";
+   }
+
+   if (typeof optionalContent == "string") {
       ret.textContent = optionalContent;
+      paramSet = true;
+   }
+
+   if (optionalContent instanceof HTMLElement) {
+      ret.appendChild(optionalContent);
+      paramSet = true;
+   }
+
+   if (!paramSet) {
+      let type = typeof optionalContent;
+      throw new Error(`optionalContent must be either a string or an HTMLElement (found ${type})`);
    }
 
    /**
@@ -431,7 +451,7 @@ export function Checkbox(optionalContent) {
  * Creates a flex container element with the specified flex direction.
  *
  * @param {string} flexDirection - The direction in which the flex items will be laid out. Valid values are "row", "row-reverse", "column", and "column-reverse".
- * @param {string} optionalContent - Optional content to be placed inside the flex container.
+ * @param {HTMLElement|string} optionalContent - Optional content to be placed inside the flex container.
  * @return {HTMLElement} The created flex container element.
  */
 export function Flex(flexDirection, optionalContent) {
@@ -444,7 +464,7 @@ export function Flex(flexDirection, optionalContent) {
  * Creates a GridColumn element with the specified grid template columns and optional content.
  *
  * @param {string} gridTemplateColumns - The template for the grid columns.
- * @param {string} optionalContent - Optional content to be included in the GridColumn element.
+ * @param {HTMLElement|string} optionalContent - Optional content to be included in the GridColumn element.
  * @return {HTMLElement} The created GridColumn element.
  */
 export function GridColumn(gridTemplateColumns, optionalContent) {
@@ -457,7 +477,7 @@ export function GridColumn(gridTemplateColumns, optionalContent) {
  * Creates a GridRow element with the specified grid template rows and optional content.
  *
  * @param {string} gridTemplateRows - The CSS grid template rows for the element.
- * @param {string} optionalContent - Optional content to be added inside the GridRow element.
+ * @param {HTMLElement|HTMLElement|string} optionalContent - Optional content to be added inside the GridRow element.
  * @return {HTMLElement} The created GridRow element.
  */
 export function GridRow(gridTemplateRows, optionalContent) {
@@ -469,7 +489,7 @@ export function GridRow(gridTemplateRows, optionalContent) {
 /**
  * Creates a password input field.
  *
- * @param {any} optionalContent - Optional content to display within the input field.
+ * @param {HTMLElement|string} optionalContent - Optional content to display within the input field.
  * @return {HTMLElement} The generated password input field.
  */
 export function PasswordInput(optionalContent) {
@@ -672,7 +692,7 @@ export function TabbedContainer(tabgroup, direction) {
  * that it belongs to.
  *
  * @param {string} tabgroup - The TabbedGroup parent of the TabbedView.
- * @param {string} caption - The caption text for the TabbedView.
+ * @param {HTMLElement|string} caption - The caption text for the TabbedView.
  * @return {HTMLElement} The created TabbedView component.
  */
 export function TabbedView(tabgroup, caption) {
@@ -712,6 +732,7 @@ export function TabbedView(tabgroup, caption) {
 /**
  * Creates a dialog element.
  *
+ * @param {HTMLElement|string} optionalContent - The content of the dialog.
  * @return {HTMLDialogElement} The created dialog element.
  */
 export function Dialog(optionalContent) {
@@ -761,12 +782,11 @@ export function Dialog(optionalContent) {
 /**
  * Creates a new MenuContainer with optional display content.
  *
- * @param {string} optionalContent - Optional content to be displayed.
+ * @param {HTMLElement|string} title - Title of this menu content to be displayed.
  * @return {HTMLElement} The newly created MenuContainer element.
  */
-export function MenuContainer(optionalContent) {
-   let ret = Div(optionalContent);
-
+export function MenuContainer(title) {
+   let ret = Div(title);
    /**
     * Adds a child MenuItem to the MenuContainer. The child MenuItem must be an
     * instance of a HTMLDetailsElement.
@@ -837,10 +857,20 @@ export function MenuContainer(optionalContent) {
 /**
  * Creates a new MenuItem with a specified title.
  *
- * @param {string} title - The optional content to be displayed in the MenuItem.
+ * @param {HTMLElement|string} title - The optional content to be displayed in the MenuItem.
  * @return {HTMLElement} The created MenuItem.
  */
 export function MenuItem(title) {
    return Details()
       .push(Summary(title));
+}
+
+
+export async function calculateHash(hashName, data) {
+   const encoder = new TextEncoder();
+   const dataBuffer = encoder.encode(data);
+   const hashBuffer = await crypto.subtle.digest(hashName, dataBuffer);
+   const hashArray = Array.from(new Uint8Array(hashBuffer));
+   const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+   return hashHex;
 }
