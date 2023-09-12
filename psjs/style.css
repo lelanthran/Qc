@@ -24,3 +24,15 @@
 .Highlight {
    background-color: yellow;
 }
+
+.even-rows {
+   color:   darkolivegreen;
+}
+
+.odd-rows {
+   color:   darkcyan;
+}
+
+.tab-container-title {
+   background-color: bisque;
+}

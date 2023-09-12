@@ -467,10 +467,38 @@ export function Flex(flexDirection, optionalContent) {
  * @param {HTMLElement|string} optionalContent - Optional content to be included in the GridColumn element.
  * @return {HTMLElement} The created GridColumn element.
  */
-export function GridColumn(gridTemplateColumns, optionalContent) {
-   return Element("div", optionalContent)
+export function GridColumn(gridTemplateColumns) {
+   let ret = Element("div")
       .setStyle("display", "grid")
       .setStyle("gridTemplateColumns", gridTemplateColumns);
+
+
+   ret._evenClass = "even--class";
+   ret._oddClass = "odd--class";
+
+   ret.push = (child) => {
+      let cls = (ret.children.length + 1) % 2 == 0 ? ret._evenClass : ret._oddClass;
+      child.classListAdd(cls);
+      ret.appendChild(child);
+      return ret;
+   }
+
+   ret.setGridTemplateColumns = (gtc) => {
+      ret.style.gridTemplateColumns = gtc;
+      return ret;
+   }
+
+   ret.setEvenClass = (evenClass) => {
+      ret._evenClass = evenClass;
+      return ret;
+   }
+
+   ret.setOddClass = (oddClass) => {
+      ret._oddClass = oddClass;
+      return ret;
+   }
+
+   return ret;
 }
 
 /**
@@ -871,45 +899,6 @@ export function MenuContainer(title) {
 export function MenuItem(title) {
    return Details()
       .push(Summary(title));
-}
-
-
-export function TabularContainer(title) {
-   let ret = Div(title)
-      .push(GridColumn("1fr"));
-
-   ret._ncols_total = 1;
-   ret._ncols_running = 1;
-   ret._evenClass = title + "_evenClass";
-   ret._oddClass = title + "_oddClass";
-
-   ret.push = (child) => {
-      ret.children[1].appendChild(child);
-      return ret;
-   }
-
-   ret.rowBreak = () => {
-      if (ret._ncols_running > ret._ncols_total) {
-         ret._ncols_total = ret._ncols_running;
-         ret.children[1].style.gridTemplateColumns = `repeat(${ret._ncols_total}, 1fr)`;
-         console.log(`repeat(${ret._ncols_total}, 1fr)`);
-         ret._ncols_running = 0;
-      }
-      ret._ncols_running++;
-      return ret;
-   }
-
-   ret.setEvenClass = (evenClass) => {
-      ret._evenClass = evenClass;
-      return ret;
-   }
-
-   ret.setOddClass = (oddClass) => {
-      ret._oddClass = oddClass;
-      return ret;
-   }
-
-   return ret;
 }
 
 
