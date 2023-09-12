@@ -28,8 +28,7 @@
       // 3. On the click, the button publishes a message to channel1
       // 4. On receipt of a message, the div publishes a message to channel2
       // 5. The timer just continuously generates a message on channel3.
-      let counter = 0;
-      let timerCounter = 3;
+      let counter = 3;
 
 
 
@@ -69,23 +68,29 @@
       // /////////////////////////////////////////////////////////////////////////
       // General testing of delivering messages on a channel. A div below subscribes
       // to this channel for this specific message, thn displays it in th div.
+      let displayed = false;
       let timer = setInterval(async () => {
-         psjs.pub({}, "channel3", "counter", `timed publisher: ${timerCounter}`);
-         if (timerCounter-- <= 0) {
-            clearInterval(timer);
-            let actualHashCode = await elements.calculateHash('SHA-1', document.body);
-            // NOTE: This must be updated each time a change is made that changes document.body.
-            let expectedHashCode = "f90afbb1d935dcdc0df4a7b7582bc0c440dd0584";
-            let testMessage = actualHashCode == expectedHashCode
-               ? elements.Div(`PASSED [${expectedHashCode}:${actualHashCode}]`)
-                  .setStyle("color", "green")
-               : elements.Div(`FAILED [${expectedHashCode}:${actualHashCode}]`)
-                  .setStyle("color", "red");
+         counter--;
+         console.log(`counter=${counter}`);
+         if (counter >= 0) {
+            psjs.pub({}, "channel3", "counter", `timed publisher: ${counter}`);
+         } else {
+            if (!displayed) {
+               displayed = true;
+               let actualHashCode = await elements.calculateHash('SHA-1', document.body);
+               // NOTE: This must be updated each time a change is made that changes document.body.
+               let expectedHashCode = "f90afbb1d935dcdc0df4a7b7582bc0c440dd0584";
+               let testMessage = actualHashCode == expectedHashCode
+                  ? elements.Div(`PASSED [${expectedHashCode}:${actualHashCode}]`)
+                     .setStyle("color", "green")
+                  : elements.Div(`FAILED [${expectedHashCode}:${actualHashCode}]`)
+                     .setStyle("color", "red");
 
-            elements.Div("Hashcode: " + actualHashCode)
-               .attachTo(document.body);
-            elements.Div(testMessage)
-               .attachTo(document.body);
+               elements.Div("Hashcode: " + actualHashCode)
+                  .attachTo(document.body);
+               elements.Div(testMessage)
+                  .attachTo(document.body);
+            }
          }
       }, 1000);
 
@@ -252,6 +257,48 @@
                this.innerHTML += `<br>channel3: ${subject}:<tt>` + payload + "</tt>";
             }))
          .attachTo(document.body);
+
+      // /////////////////////////////////////////////////////////////////////////
+      // Test the TabularContainer and TabularItem functions.
+
+      // Simulate reload of the items
+      elements.Button("Reload table")
+         .addEventListener("click", function (evt) {
+            let table = document.body.querySelector("#TabularContainer");
+            document.body.replaceChild(makeTable(), table);
+         })
+         .attachTo(document.body);
+
+      makeTable()
+         .attachTo(document.body);
+
+      function makeTable() {
+         return elements.TabularContainer(elements.Div("Tabular Container Title: " + counter).classListAdd("tab-container-title"))
+            .setId("TabularContainer")
+            .setEvenClass("even-rows")
+            .setOddClass("odd-rows")
+            .push(elements.Div("Header 0"))
+            .push(elements.Div("Header 1"))
+            .push(elements.Div("Header 2"))
+            .rowBreak()
+            .push(elements.Div("Row 0, Col 0: " + counter))
+            .push(elements.Div("Row 0, Col 1: " + counter))
+            .push(elements.Div("Row 0, Col 2: " + counter))
+            .rowBreak()
+            .push(elements.Div("Row 1, Col 0: " + counter))
+            .push(elements.Div("Row 1, Col 1: " + counter))
+            .push(elements.Div("Row 1, Col 2: " + counter))
+            .rowBreak()
+            .push(elements.Div("Row 2, Col 0: " + counter))
+            .push(elements.Div("Row 2, Col 1: " + counter))
+            .push(elements.Div("Row 2, Col 2: " + counter))
+            .rowBreak()
+            .push(elements.Div("Row 3, Col 0: " + counter))
+            .push(elements.Div("Row 3, Col 1: " + counter))
+            .push(elements.Div("Row 3, Col 2: " + counter))
+            .rowBreak();
+      }
+
 
    </script>
 

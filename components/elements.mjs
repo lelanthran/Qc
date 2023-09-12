@@ -376,7 +376,7 @@ export function Element(tag, optionalContent) {
    return ret;
 }
 
-/**
+/* **************************************************
  * Standard elements
  */
 export function Form(optionalContent) {
@@ -544,7 +544,16 @@ export function RadioItem(displayText, value) {
    return ri;
 }
 
+/* **************************************************
+ * Custom Elements
+ */
 
+export function ActiveList(optionalContent) {
+   let ret = Element("div", optionalContent);
+
+
+   return ret;
+}
 /**
  * Creates a `TabbedContainer` element. A `TabbedContainer` is simply a manager for
  * TabbedView elements. Each TabbedView element can be `.pushed()` into a `TabbedContainer`.
@@ -797,7 +806,6 @@ export function MenuContainer(title) {
     */
    ret.push = (child) => {
       let iname = child instanceof HTMLDetailsElement;
-      console.log("" + iname);
       if (!(child instanceof HTMLDetailsElement)) {
          throw new Error("child must be a details element");
       }
@@ -866,6 +874,49 @@ export function MenuItem(title) {
 }
 
 
+export function TabularContainer(title) {
+   let ret = Div(title)
+      .push(GridColumn("1fr"));
+
+   ret._ncols_total = 1;
+   ret._ncols_running = 1;
+   ret._evenClass = title + "_evenClass";
+   ret._oddClass = title + "_oddClass";
+
+   ret.push = (child) => {
+      ret.children[1].appendChild(child);
+      return ret;
+   }
+
+   ret.rowBreak = () => {
+      if (ret._ncols_running > ret._ncols_total) {
+         ret._ncols_total = ret._ncols_running;
+         ret.children[1].style.gridTemplateColumns = `repeat(${ret._ncols_total}, 1fr)`;
+         console.log(`repeat(${ret._ncols_total}, 1fr)`);
+         ret._ncols_running = 0;
+      }
+      ret._ncols_running++;
+      return ret;
+   }
+
+   ret.setEvenClass = (evenClass) => {
+      ret._evenClass = evenClass;
+      return ret;
+   }
+
+   ret.setOddClass = (oddClass) => {
+      ret._oddClass = oddClass;
+      return ret;
+   }
+
+   return ret;
+}
+
+
+/* ***************************************************
+ * Some utility functions.
+ * ************************************************** */
+
 export async function calculateHash(hashName, data) {
    const encoder = new TextEncoder();
    const dataBuffer = encoder.encode(data);
@@ -874,3 +925,4 @@ export async function calculateHash(hashName, data) {
    const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
    return hashHex;
 }
+
