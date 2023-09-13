@@ -1,6 +1,6 @@
 // TODO: Enable calls to this when refactoring, remove the calls when done.
 export function validateParams() {
-    for (let i = 0; i < arguments.length; i++) {
+    for (let i = 1; i < arguments.length; i++) {
         if (arguments[i] == undefined || arguments[i] == null) {
             throw new Error(`Argument ${i} is null or undefined`);
         }
@@ -23,6 +23,9 @@ export function pub(sender, channel, subject, payload) {
     if (handlers == null || handlers == undefined || handlers.length == 0) {
         // throw new Error(`No handlers found for channel ${channel}`);
         return;
+    }
+    if (typeof payload === "function") {
+        payload = payload();
     }
     handlers.forEach(h => {
         if (h.func(sender, subject, payload) == true) {

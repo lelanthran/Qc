@@ -231,10 +231,29 @@ export function Element(tag, optionalContent) {
     * @param {HTMLElement} newElement - The new element to replace the current element with.
     * @return {HTMLElement} The new element that replaces the current element.
     */
-   ret.Replace = (newElement) => {
+   ret.replace = (newElement) => {
       let parent = ret.parentElement;
       parent.replaceChild(newElement, ret);
       return newElement;
+   }
+
+   /**
+    * Replaces all the children in the HTMLElement with the children specified in the
+    * array passed in.
+    *
+    * @param {HTMLElement} childElementsArray - The new children.
+    * @return {HTMLElement} The element with all children replaced by the childElementsArray
+    */
+   ret.replaceChildren = (childElementsArray) => {
+      let i = 0;
+      for (i = 0; i < ret.children.length && i < childElementsArray.length; i++) {
+         ret.replace(childElementsArray[i], ret.children[i]);
+      }
+      while (i < childElementsArray.length) {
+         ret.appendChild(childElementsArray[i++]);
+      }
+
+      return ret;
    }
 
    /**
@@ -323,13 +342,8 @@ export function Element(tag, optionalContent) {
     * @return {HTMLElement} - The element.
     */
    ret.publishOnEvent = (evtName, channel, subject, payload) => {
-      let f = () => {
-         return (typeof payload === "function") ? payload.call(ret) : payload;
-      }
-
       ret.addEventListener(evtName, () => {
-         let p = f();
-         psjs.pub(ret, channel, subject, p);
+         psjs.pub(ret, channel, subject, payload);
       });
       return ret;
    }
@@ -773,7 +787,7 @@ export function TabbedView(tabgroup, caption) {
  * @return {HTMLDialogElement} The created dialog element.
  */
 export function Dialog(optionalContent) {
-   let ret = Element(optionalContent);
+   let ret = Element("dialog", optionalContent);
 
    ret._show = ret.show;
    /**
