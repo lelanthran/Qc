@@ -51,7 +51,11 @@ export function pub(sender, channel, subject, payload) {
  * @return {id} - An id that can be used to unsubscribe this particular subscription
  */
 export function sub(channel, subject, handler) {
-    return messageHandlerAdd(channel, subject, handler);
+    try {
+        return messageHandlerAdd(channel, subject, handler);
+    } catch (e) {
+        throw new Error(`Unhandled exception in subscription: [${channel}:${subject}]`);
+    }
 }
 
 /**
