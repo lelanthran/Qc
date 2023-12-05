@@ -1,3 +1,4 @@
+// vim: set ts=3:sw=3:sts=3:et:
 // TODO: Enable calls to this when refactoring, remove the calls when done.
 export function validateParams() {
     for (let i = 1; i < arguments.length; i++) {
@@ -177,3 +178,174 @@ function messageHandlerAdd(channel, subject, func) {
 window.pub = pub;
 window.sub = sub;
 window.unsub = unsub;
+
+function setElementValueOrStatus(element, value) {
+    if (element.tagName === 'INPUT') {
+        if (element.type === 'checkbox' || element.type === 'radio') {
+            element.checked = value;
+        } else {
+            element.value = value;
+        }
+    } else if (element.tagName === 'SELECT' || element.tagName === 'TEXTAREA') {
+        element.value = value;
+    }
+}
+
+function getElementValueOrStatus(element) {
+    if (element.tagName === 'INPUT') {
+        if (element.type === 'checkbox' || element.type === 'radio') {
+            return element.checked;
+        } else {
+            return element.value;
+        }
+    } else if (element.tagName === 'SELECT' || element.tagName === 'TEXTAREA') {
+        return element.value;
+    }
+
+    return null; // or handle the case where the element type is not supported
+}
+
+function findFirstPsjsTreeParent(node) {
+    if (node == null) {
+        return null;
+    }
+    if (node instanceof PsjsTree) {
+        return node;
+    }
+    if (node.parentElement != null && node.parentElement != undefined) {
+        return findFirstPsjsTreeParent(node.parentElement);
+    }
+    return null;
+}
+
+class PsjsTree extends HTMLElement {
+    constructor() {
+        super();
+        this.bindings = new Set();
+    }
+
+    connectedCallback() {
+        this.attachShadow({ mode: 'open' });
+        this.render();
+    }
+
+    render() {
+        this.shadowRoot.innerHTML = '<slot></slot>';
+    }
+
+    addBinding(elementId) {
+        this.bindings.add(elementId);
+        let s = "";
+        this.bindings.forEach((eId) => {
+            s += `${eId} `;
+        })
+    }
+}
+class PsjsBind extends HTMLElement {
+    constructor() {
+        super();
+        this.forAttribute = "";
+    }
+
+    static get observedAttributes() {
+        return ['for'];
+    }
+
+    connectedCallback() {
+        this.render();
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (name === 'for' && oldValue !== newValue) {
+            this.forAttribute = newValue;
+        }
+    }
+
+    render() {
+        let psjsTree = findFirstPsjsTreeParent(this);
+        if (psjsTree == null) {
+            return;
+        }
+        psjsTree.addBinding(this.forAttribute);
+    }
+}
+
+class PsjsPublish extends HTMLElement {
+    constructor() {
+        super();
+        this.onevent = null;
+        this.channel = "";
+        this.subject = "";
+    }
+
+    static get observedAttributes() {
+        return ['onevent', 'channel', 'subject'];
+    }
+
+    connectedCallback() {
+        this.render();
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (oldValue !== newValue) {
+            this[name] = newValue;
+        }
+    }
+
+    render() {
+        this.addEventListener(this.onevent, () => {
+            let psjsTree = findFirstPsjsTreeParent(this);
+            if (psjsTree == null) {
+                return;
+            }
+            let msgObj = new Object();
+            psjsTree.bindings.forEach((eId) => {
+                let element = psjsTree.querySelector("#" + eId);
+                msgObj[eId] = getElementValueOrStatus(element);
+            });
+            console.log(`event: ${this.onevent}: Publishing ${this.channel} ${this.subject} ${JSON.stringify(msgObj, ' ', 3)}`);
+            pub(this, this.channel, this.subject, msgObj);
+        });
+    }
+}
+
+class PsjsSubscribe extends HTMLElement {
+    constructor() {
+        super();
+        this.channel = "";
+        this.subject = "";
+    }
+
+    static get observedAttributes() {
+        return ['channel', 'subject'];
+    }
+
+    connectedCallback() {
+        this.render();
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (oldValue !== newValue) {
+            this[name] = newValue;
+        }
+    }
+
+    render() {
+        sub(this.channel, this.subject, (sender, subject, payload) => {
+            let psjsTree = findFirstPsjsTreeParent(this);
+            if (psjsTree == null) {
+                console.log("Error: no parent found");
+                return;
+            }
+            psjsTree.bindings.forEach((eId) => {
+                let element = psjsTree.querySelector("#" + eId);
+                setElementValueOrStatus(element, payload[eId]);
+            })
+        });
+    }
+}
+
+customElements.define('psjs-tree', PsjsTree);
+customElements.define('psjs-bind', PsjsBind);
+customElements.define('psjs-publish', PsjsPublish);
+customElements.define('psjs-subscribe', PsjsSubscribe);
