@@ -92,7 +92,7 @@
                   .attachTo(document.body);
             }
          }
-      }, 1000000);
+      }, 5000);
 
 
 
@@ -309,7 +309,7 @@
          pub(this, "RPC-RESPONSE", "any", {
             "id-input-pb": pb_progress
          });
-      }, 1000);
+      }, 1500);
       psjs.sub("PBUPDATED", "UI-UPDATE", function (sender, subject, payload) {
          pb_progress = payload["id-input-pb"];
       })
@@ -363,7 +363,8 @@
       For when we want to subscribe and execute callbacks
    -->
    <psjs-tree>
-      <psjs-subscribe-event channel="RPC-RESPONSE" subject="*" execute="myFuncCall(channel, subject, msgObject);" />
+      <psjs-subscribe-event channel="RPC-RESPONSE" subject="any"
+         execute="myFuncCall('c1', 's1', {'c1': 's1', 'c2': 's2'});" />
    </psjs-tree>
 
    <br>

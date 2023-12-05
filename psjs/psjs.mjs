@@ -110,7 +110,7 @@ function findHandlers(channelName, subject) {
 
     let ret = [];
     Array.from(subjectMap.keys()).forEach((k) => {
-        if (k == null || k == "" || k === subject) {
+        if ((k == null || k === "") || new RegExp(subject).test(k)) {
             ret = ret.concat(subjectMap.get(k));
         }
     });
@@ -345,7 +345,37 @@ class PsjsSubscribe extends HTMLElement {
     }
 }
 
+class PsjsSubscribeEvent extends HTMLElement {
+    constructor() {
+        super();
+        this.channel = "";
+        this.subject = "";
+    }
+
+    static get observedAttributes() {
+        return ['channel', 'subject', 'execute'];
+    }
+
+    connectedCallback() {
+        this.render();
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (oldValue !== newValue) {
+            this[name] = newValue;
+        }
+    }
+
+    render() {
+        sub(this.channel, this.subject, (sender, subject, payload) => {
+            console.log(`executing: ${this.execute}`);
+            eval(this.execute);
+        });
+    }
+}
+
 customElements.define('psjs-tree', PsjsTree);
 customElements.define('psjs-bind', PsjsBind);
 customElements.define('psjs-publish', PsjsPublish);
 customElements.define('psjs-subscribe', PsjsSubscribe);
+customElements.define('psjs-subscribe-event', PsjsSubscribeEvent);
