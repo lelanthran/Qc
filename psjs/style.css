@@ -1,0 +1,38 @@
+.common-transition {
+   transition: display 0.9s ease-in-out;
+}
+
+.MyTabbedGroupSelected {
+   background-color: pink;
+   border-width: 0;
+}
+
+.MyTabbedGroupDeselected {
+   background-color: grey;
+   border-width: 0;
+}
+
+.MyTabbedGroupContainer {
+   max-width: 80%;
+   margin: 0 auto 0 auto;
+   height: 200px;
+   min-height: 200px;
+   overflow: scroll;
+   background-color: aquamarine;
+}
+
+.Highlight {
+   background-color: yellow;
+}
+
+.even-rows {
+   color:   darkolivegreen;
+}
+
+.odd-rows {
+   color:   darkcyan;
+}
+
+.tab-container-title {
+   background-color: bisque;
+}
