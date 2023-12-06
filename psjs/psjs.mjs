@@ -368,7 +368,6 @@ class PsjsSubscribeEvent extends HTMLElement {
 
     render() {
         sub(this.channel, this.subject, (sender, subject, payload) => {
-            console.log(`executing: ${this.execute}`);
             eval(this.execute);
         });
     }
