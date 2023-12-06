@@ -188,8 +188,10 @@ function setElementValueOrStatus(element, value) {
         }
     } else if (element.tagName === 'SELECT' || element.tagName === 'TEXTAREA') {
         element.value = value;
+    } else if (value instanceof HTMLElement) {
+        element.replaceChild(value, element.childNodes[0]);
     } else {
-       element.innerText = value;
+        element.innerText = value;
     }
 }
 
