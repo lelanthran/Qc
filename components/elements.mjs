@@ -401,6 +401,10 @@ export function Button(optionalContent) {
    return Element("button", optionalContent);
 }
 
+export function A(optionalContent,href) {
+   return Element("a", optionalContent).setAttribute("href", href);
+}
+
 export function Div(optionalContent) {
    return Element("div", optionalContent);
 }
