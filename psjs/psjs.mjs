@@ -188,6 +188,8 @@ function setElementValueOrStatus(element, value) {
         }
     } else if (element.tagName === 'SELECT' || element.tagName === 'TEXTAREA') {
         element.value = value;
+    } else {
+       element.innerText = value;
     }
 }
 
