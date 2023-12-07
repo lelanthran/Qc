@@ -413,23 +413,6 @@ export function Br(optionalContent) {
    return Element("br", optionalContent);
 }
 
-export function Input(optionalContent) {
-   let ret = Element("input", optionalContent);
-
-   /**
-    * Sets the placeholder value for the element.
-    *
-    * @param {string} placeholder - The placeholder text to be displayed in the element.
-    * @return {HTMLElement} - The modified element with the updated placeholder value.
-    */
-   ret.setPlaceholder = (placeholder) => {
-      ret.setAttribute("placeholder", placeholder);
-      return ret;
-   }
-
-   return ret;
-}
-
 export function Label(optionalContent, forName) {
    return Element("label", optionalContent).setAttribute("for", forName);
 }
@@ -455,10 +438,45 @@ export function Legend(optionalContent) {
    return Element("legend", optionalContent);
 }
 
+export function Ul(optionalContent) {
+    return Element("ul", optionalContent);
+}
+
+export function Ol(optionalContent) {
+    return Element("ol", optionalContent);
+}
+
+export function Li(optionalContent) {
+    return Element("li", optionalContent);
+}
+
+
+/**************************************************
+ * Input elements
+ */
+
+export function Input(optionalContent) {
+   let ret = Element("input", optionalContent);
+
+   /**
+    * Sets the placeholder value for the element.
+    *
+    * @param {string} placeholder - The placeholder text to be displayed in the element.
+    * @return {HTMLElement} - The modified element with the updated placeholder value.
+    */
+   ret.setPlaceholder = (placeholder) => {
+      ret.setAttribute("placeholder", placeholder);
+      return ret;
+   }
+
+   return ret;
+}
+
 export function Checkbox(optionalContent) {
    return Input(optionalContent)
       .setAttribute("type", "checkbox");
 }
+
 
 
 /**************************************************
