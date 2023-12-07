@@ -450,6 +450,10 @@ export function Li(optionalContent) {
     return Element("li", optionalContent);
 }
 
+export function Hr() {
+    return Element("hr");
+}
+
 
 /**************************************************
  * Input elements
