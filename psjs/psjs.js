@@ -1,6 +1,6 @@
 // vim: set ts=3:sw=3:sts=3:et:
 // TODO: Enable calls to this when refactoring, remove the calls when done.
-export function validateParams() {
+function __psjs__ValidateParams() {
     for (let i = 1; i < arguments.length; i++) {
         if (arguments[i] == undefined || arguments[i] == null) {
             throw new Error(`Argument ${i} is null or undefined`);
@@ -17,16 +17,17 @@ export function validateParams() {
  * @param {string} subject - A subject for the message.
  * @param {any} payload - The payload of the message.
  */
-export function pub(sender, channel, subject, payload) {
-    validateParams(sender, channel, subject, payload);
+function psjsPublish(sender, channel, subject, payload) {
+    __psjs__ValidateParams(sender, channel, subject, payload);
 
-    let handlers = findHandlers(channel, subject);
+    let handlers = __psjs__findHandlers(channel, subject);
     if (handlers == null || handlers == undefined || handlers.length == 0) {
         // throw new Error(`No handlers found for channel ${channel}`);
         return;
     }
     if (typeof payload === "function") {
-        payload = payload();
+        sender._payloadFunc = payload;
+        payload = sender._payloadFunc();
     }
     handlers.forEach(h => {
         if (h.func(sender, subject, payload) == true) {
@@ -51,9 +52,9 @@ export function pub(sender, channel, subject, payload) {
  * @param {SubscriptionHandler} handler - The handler function, called with `(sender, subject, payload)`.
  * @return {id} - An id that can be used to unsubscribe this particular subscription
  */
-export function sub(channel, subject, handler) {
+function psjsSubscribe(channel, subject, handler) {
     try {
-        return messageHandlerAdd(channel, subject, handler);
+        return __psjs__messageHandlerAdd(channel, subject, handler);
     } catch (e) {
         throw new Error(`Unhandled exception in subscription: [${channel}:${subject}]`);
     }
@@ -66,12 +67,12 @@ export function sub(channel, subject, handler) {
  * @param {string} id - The ID of the message handler to remove.
  * @return {void} This function does not return a value.
  */
-export function unsub(channel, subject, id) {
-    removeHandler(id);
+function psjsUnsubscribe(channel, subject, id) {
+    __psjs__removeHandler(id);
 }
 
 let id = 0;
-function getNextId() {
+function __psjs__getNextId() {
     return id++ % (Number.MAX_SAFE_INTEGER - 1);
 }
 
@@ -99,7 +100,7 @@ const channelMap = new Map();
  * @param {string} subject - The subject to match with the channel's handlers.
  * @return {Array} A immutable array of @link HandlerType objects.
  */
-function findHandlers(channelName, subject) {
+function __psjs__findHandlers(channelName, subject) {
     let subjectMap = channelMap.get(channelName);
     if (subjectMap == null) {
         return [];
@@ -124,7 +125,7 @@ function findHandlers(channelName, subject) {
  * @param {string} subject - The subject to set the handler for.
  * @param {HandlerType} handler - The handler instance.
  */
-function setHandler(channelName, subject, handler) {
+function __psjs__setHandler(channelName, subject, handler) {
     let subjectMap = channelMap.get(channelName);
     if (subjectMap == null) {
         subjectMap = new Map();
@@ -145,7 +146,7 @@ function setHandler(channelName, subject, handler) {
  * @param {number} id - The ID of the handler to remove.
  * @return {undefined} This function does not return a value.
  */
-function removeHandler(id) {
+function __psjs__removeHandler(id) {
     channelMap.forEach((subjectMap) => {
         subjectMap.forEach((handlers, subject) => {
             handlers.forEach((handler) => {
@@ -165,9 +166,9 @@ function removeHandler(id) {
  * @param {SubscriptionHandler} func - The function to handle the message.
  * @return {number} The ID of the added message handler that can be used to unsubscribe.
  */
-function messageHandlerAdd(channel, subject, func) {
-    let id = getNextId();
-    setHandler(channel, subject, {
+function __psjs__messageHandlerAdd(channel, subject, func) {
+    let id = __psjs__getNextId();
+    __psjs__setHandler(channel, subject, {
         id: id,
         func: func
     });
@@ -175,11 +176,7 @@ function messageHandlerAdd(channel, subject, func) {
 }
 
 
-window.pub = pub;
-window.sub = sub;
-window.unsub = unsub;
-
-function setElementValueOrStatus(element, value) {
+function __psjs__setElementValueOrStatus(element, value) {
     if (element.tagName === 'INPUT') {
         if (element.type === 'checkbox' || element.type === 'radio') {
             element.checked = value;
@@ -195,7 +192,7 @@ function setElementValueOrStatus(element, value) {
     }
 }
 
-function getElementValueOrStatus(element) {
+function __psjs__getElementValueOrStatus(element) {
     if (element.tagName === 'INPUT') {
         if (element.type === 'checkbox' || element.type === 'radio') {
             return element.checked;
@@ -209,7 +206,7 @@ function getElementValueOrStatus(element) {
     return null; // or handle the case where the element type is not supported
 }
 
-function findFirstPsjsTreeParent(node) {
+function __psjs__findFirstPsjsTreeParent(node) {
     if (node == null) {
         return null;
     }
@@ -217,7 +214,7 @@ function findFirstPsjsTreeParent(node) {
         return node;
     }
     if (node.parentElement != null && node.parentElement != undefined) {
-        return findFirstPsjsTreeParent(node.parentElement);
+        return __psjs__findFirstPsjsTreeParent(node.parentElement);
     }
     return null;
 }
@@ -266,7 +263,7 @@ class PsjsBind extends HTMLElement {
     }
 
     render() {
-        let psjsTree = findFirstPsjsTreeParent(this);
+        let psjsTree = __psjs__findFirstPsjsTreeParent(this);
         if (psjsTree == null) {
             return;
         }
@@ -298,17 +295,17 @@ class PsjsPublish extends HTMLElement {
 
     render() {
         this.addEventListener(this.onevent, () => {
-            let psjsTree = findFirstPsjsTreeParent(this);
+            let psjsTree = __psjs__findFirstPsjsTreeParent(this);
             if (psjsTree == null) {
                 return;
             }
             let msgObj = new Object();
             psjsTree.bindings.forEach((eId) => {
                 let element = psjsTree.querySelector("#" + eId);
-                msgObj[eId] = getElementValueOrStatus(element);
+                msgObj[eId] = __psjs__getElementValueOrStatus(element);
             });
             console.log(`event: ${this.onevent}: Publishing ${this.channel} ${this.subject} ${JSON.stringify(msgObj, ' ', 3)}`);
-            pub(this, this.channel, this.subject, msgObj);
+            psjsPublish(this, this.channel, this.subject, msgObj);
         });
     }
 }
@@ -335,15 +332,15 @@ class PsjsSubscribe extends HTMLElement {
     }
 
     render() {
-        sub(this.channel, this.subject, (sender, subject, payload) => {
-            let psjsTree = findFirstPsjsTreeParent(this);
+        psjsSubscribe(this.channel, this.subject, (sender, subject, payload) => {
+            let psjsTree = __psjs__findFirstPsjsTreeParent(this);
             if (psjsTree == null) {
                 console.log("Error: no parent found");
                 return;
             }
             psjsTree.bindings.forEach((eId) => {
                 let element = psjsTree.querySelector("#" + eId);
-                setElementValueOrStatus(element, payload[eId]);
+                __psjs__setElementValueOrStatus(element, payload[eId]);
             })
         });
     }
@@ -371,7 +368,7 @@ class PsjsSubscribeEvent extends HTMLElement {
     }
 
     render() {
-        sub(this.channel, this.subject, (sender, subject, payload) => {
+        psjsSubscribe(this.channel, this.subject, (sender, subject, payload) => {
             eval(this.execute);
         });
     }

@@ -1,5 +1,4 @@
-import * as psjs from "../psjs/psjs.mjs";
-
+// vim: set ts=3:sw=3:sts=3:et:
 
 /* **************************************************************************
  * Some default quick components to enable a Fluent API to DOM construction.
@@ -343,7 +342,7 @@ export function Element(tag, optionalContent) {
     */
    ret.publishOnEvent = (evtName, channel, subject, payload) => {
       ret.addEventListener(evtName, () => {
-         psjs.pub(ret, channel, subject, payload);
+         psjsPublish(ret, channel, subject, payload);
       });
       return ret;
    }
@@ -357,7 +356,7 @@ export function Element(tag, optionalContent) {
     * @return {HTMLElement} - The element.
     */
    ret.publish = (channel, subject, payload) => {
-      psjs.pub(ret, channel, subject, payload);
+      psjsPublish(ret, channel, subject, payload);
       return ret;
    }
 
@@ -380,10 +379,10 @@ export function Element(tag, optionalContent) {
     */
    ret.subscribe = (channel, subject, func) => {
       let f = (sender, subject, payload) => {
-         psjs.validateParams(ret, sender, subject, payload);
+         __psjs__ValidateParams(ret, sender, subject, payload);
          func.call(ret, sender, subject, payload);
       }
-      psjs.sub(channel, subject, f);
+      psjsSubscribe(channel, subject, f);
       return ret;
    }
 
@@ -451,7 +450,7 @@ export function Li(optionalContent) {
 }
 
 export function Hr() {
-    return Element("hr");
+    return Element("hr", "");
 }
 
 

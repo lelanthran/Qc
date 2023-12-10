@@ -15,11 +15,11 @@
       }
    </style>
    <link rel="stylesheet" type="text/css" href="./style.css">
+   <script src="psjs.js"> </script>
 </head>
 
 <body>
    <script type="module">
-      import * as psjs from "./psjs.mjs";
       import * as elements from "../components/elements.mjs";
 
       // The test is on three channels:
@@ -58,7 +58,7 @@
          .publishOnEvent("click", "DIALOG", "show", "")
          .attachTo(document.body);
 
-      psjs.sub("DIALOG", "close", function (sender, subject, payload) {
+      psjsSubscribe("DIALOG", "close", function (sender, subject, payload) {
          console.log(`DIALOG CLOSED: sender=[${sender}], subject=[${subject}], payload=[${payload}]`);
          console.log(`DIALOG CLOSED: ${sender.returnValue}`);
       });
@@ -73,7 +73,7 @@
          counter--;
          console.log(`counter=${counter}`);
          if (counter >= 0) {
-            psjs.pub({}, "channel3", "counter", `timed publisher: ${counter}`);
+            psjsPublish({}, "channel3", "counter", `timed publisher: ${counter}`);
          } else {
             if (!displayed) {
                displayed = true;
@@ -303,14 +303,14 @@
       setInterval(function () {
          pb_progress++;
          console.log("progress: " + pb_progress);
-         pub(this, "PBUPDATED", "SERVER-UPDATE", {
+         psjsPublish(this, "PBUPDATED", "SERVER-UPDATE", {
             "id-input-pb": pb_progress
          });
-         pub(this, "RPC-RESPONSE", "any", {
+         psjsPublish(this, "RPC-RESPONSE", "any", {
             "id-input-pb": pb_progress
          });
       }, 1500);
-      psjs.sub("PBUPDATED", "UI-UPDATE", function (sender, subject, payload) {
+      psjsSubscribe("PBUPDATED", "UI-UPDATE", function (sender, subject, payload) {
          pb_progress = payload["id-input-pb"];
       })
    </script>
@@ -338,7 +338,7 @@
    <br>
    <br>
 
-   <button onclick='pub (this, "CHAN1", "FORM-RESET", {
+   <button onclick='psjsPublish (this, "CHAN1", "FORM-RESET", {
                      "id-input1": "reset by message",
                      "id-input2": "reset by message",
                      "id-input3": "true",
